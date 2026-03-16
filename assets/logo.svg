@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 160" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="600" y2="160" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f0f1a"/>
+      <stop offset="100%" stop-color="#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#D4A574"/>
+      <stop offset="100%" stop-color="#E8C8A0"/>
+    </linearGradient>
+    <linearGradient id="text-grad" x1="0" y1="0" x2="400" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#c0c0d0"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="160" rx="16" fill="url(#bg)"/>
+  <rect x="1" y="1" width="598" height="158" rx="15" stroke="#333355" stroke-width="1" fill="none"/>
+
+  <!-- Icon: layered profiles -->
+  <g transform="translate(40, 35)">
+    <rect x="16" y="16" width="60" height="60" rx="8" stroke="#555577" stroke-width="2" fill="#1e1e35" opacity="0.5"/>
+    <rect x="8" y="8" width="60" height="60" rx="8" stroke="#777799" stroke-width="2" fill="#252545" opacity="0.7"/>
+    <rect x="0" y="0" width="60" height="60" rx="8" stroke="url(#accent)" stroke-width="2.5" fill="#2a2a4a"/>
+    <text x="30" y="38" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="24" font-weight="bold" fill="url(#accent)">P</text>
+  </g>
+
+  <!-- Title -->
+  <text x="140" y="65" font-family="Inter, -apple-system, sans-serif" font-size="32" font-weight="700" fill="url(#text-grad)">Claude Code Profile</text>
+
+  <!-- Subtitle -->
+  <text x="140" y="95" font-family="Inter, -apple-system, sans-serif" font-size="15" fill="#8888aa">Chrome-like profile management for Claude Code</text>
+
+  <!-- Badge: ccp -->
+  <rect x="140" y="108" width="48" height="24" rx="6" fill="#D4A574" opacity="0.15"/>
+  <text x="164" y="124" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="12" font-weight="600" fill="#D4A574">ccp</text>
+
+  <!-- Version badge -->
+  <rect x="198" y="108" width="56" height="24" rx="6" fill="#4488ff" opacity="0.15"/>
+  <text x="226" y="124" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="12" font-weight="600" fill="#6699ff">v0.1.0</text>
+</svg>

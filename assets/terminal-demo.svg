@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 520" fill="none">
+  <defs>
+    <linearGradient id="term-bg" x1="0" y1="0" x2="0" y2="520">
+      <stop offset="0%" stop-color="#1e1e2e"/>
+      <stop offset="100%" stop-color="#181825"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Window chrome -->
+  <rect width="720" height="520" rx="12" fill="url(#term-bg)"/>
+  <rect x="1" y="1" width="718" height="518" rx="11" stroke="#313244" stroke-width="1" fill="none"/>
+
+  <!-- Title bar -->
+  <rect width="720" height="40" rx="12" fill="#1e1e2e"/>
+  <rect y="28" width="720" height="12" fill="#1e1e2e"/>
+  <circle cx="24" cy="20" r="6" fill="#f38ba8"/>
+  <circle cx="44" cy="20" r="6" fill="#fab387"/>
+  <circle cx="64" cy="20" r="6" fill="#a6e3a1"/>
+  <text x="360" y="24" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="13" fill="#6c7086">Terminal</text>
+
+  <!-- Terminal content -->
+  <g font-family="SF Mono, Menlo, monospace" font-size="13.5">
+    <!-- Init -->
+    <text x="24" y="68" fill="#cdd6f4"><tspan fill="#a6e3a1">$</tspan> ccp init</text>
+    <text x="24" y="90" fill="#89b4fa">i</text><text x="38" y="90" fill="#cdd6f4"> Migrating to ccp management...</text>
+    <text x="24" y="110" fill="#6c7086">  &#8594; Copying ~/.claude to profiles/default...</text>
+    <text x="24" y="130" fill="#6c7086">  &#8594; Verifying copy integrity...</text>
+    <text x="24" y="150" fill="#6c7086">  &#8594; Initializing version control...</text>
+    <text x="24" y="170" fill="#6c7086">  &#8594; Creating symlink...</text>
+    <text x="24" y="190" fill="#a6e3a1">&#10003;</text><text x="38" y="190" fill="#cdd6f4"> ccp initialized. Active profile: default</text>
+
+    <!-- Create -->
+    <text x="24" y="224" fill="#cdd6f4"><tspan fill="#a6e3a1">$</tspan> ccp create reviewer --from default</text>
+    <text x="24" y="246" fill="#89b4fa">i</text><text x="38" y="246" fill="#cdd6f4"> Creating profile "reviewer"...</text>
+    <text x="24" y="266" fill="#6c7086">  &#8594; Cloning from "default"...</text>
+    <text x="24" y="286" fill="#a6e3a1">&#10003;</text><text x="38" y="286" fill="#cdd6f4"> Profile "reviewer" created</text>
+
+    <!-- List -->
+    <text x="24" y="320" fill="#cdd6f4"><tspan fill="#a6e3a1">$</tspan> ccp list</text>
+    <text x="24" y="342" fill="#cdd6f4">  <tspan fill="#a6e3a1">*</tspan> default <tspan fill="#6c7086">(active)</tspan></text>
+    <text x="24" y="362" fill="#cdd6f4">    reviewer</text>
+
+    <!-- Activate -->
+    <text x="24" y="396" fill="#cdd6f4"><tspan fill="#a6e3a1">$</tspan> ccp activate reviewer</text>
+    <text x="24" y="418" fill="#6c7086">  &#8594; Snapshotting "default"...</text>
+    <text x="24" y="438" fill="#6c7086">  &#8594; Switching to "reviewer"...</text>
+    <text x="24" y="458" fill="#a6e3a1">&#10003;</text><text x="38" y="458" fill="#cdd6f4"> Active profile: reviewer</text>
+
+    <!-- Launch -->
+    <text x="24" y="492" fill="#cdd6f4"><tspan fill="#a6e3a1">$</tspan> ccp launch reviewer  <tspan fill="#6c7086"># parallel instance</tspan></text>
+  </g>
+</svg>
