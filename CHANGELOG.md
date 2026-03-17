@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-03-17
+
 ### Added
 
+- **CI workflow**: GitHub Actions CI for PR and push-to-main validation (test + build).
 - **CI/CD release workflow**: GitHub Actions workflow for automated npm publishing and GitHub Release on `v*` tag push, with npm provenance signing.
+
+### Fixed
+
+- **CI test failure**: Added local git `user.name` and `user.email` config in `initGit()` so profile commits work in clean CI environments (GitHub Actions runners lack global git config).
 
 ## [0.2.0] - 2026-03-17
 
@@ -44,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Atomic symlink switching
 - Concurrent lock with stale PID detection
 
-[Unreleased]: https://github.com/HaloXie/claude-code-profile/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/HaloXie/claude-code-profile/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/HaloXie/claude-code-profile/releases/tag/v0.1.0
+[Unreleased]: https://github.com/me-tool/claude-code-profile/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/me-tool/claude-code-profile/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/me-tool/claude-code-profile/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/me-tool/claude-code-profile/releases/tag/v0.1.0
