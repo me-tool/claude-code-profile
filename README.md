@@ -231,6 +231,41 @@ Every profile is a git repository. Configuration changes are tracked automatical
 | `export` | Auth excluded by default (`--include-auth` to override) |
 | `pause` / `uninstall` | Restores real `~/.claude`; status bar restored to original |
 
+## Plugin Shared Store
+
+ccp uses a **pnpm-style shared store** for plugins. Instead of copying plugin files into every profile, plugins are stored once in a central location and shared via symlinks.
+
+```
+~/.claude-profiles/.store/          ← Shared store (single copy of each plugin)
+    cache/official/superpowers/     ← Plugin entity
+    marketplaces/                   ← Marketplace metadata
+
+~/.claude-profiles/default/plugins/
+    cache/official/
+        superpowers → ../.store/cache/official/superpowers  (symlink)
+    installed_plugins.json          ← Per-profile (controls which plugins are enabled)
+```
+
+**How it works:**
+- `ccp init` migrates existing plugins to the shared store
+- Each profile's `plugins/cache/` contains symlinks, not copies
+- Claude Code's install/update/disable operations work transparently through symlinks
+- New plugins installed by Claude are automatically migrated to the store on `activate` / `snapshot`
+- `ccp pause` / `ccp export` dereference symlinks back to real directories
+
+**Environment variables** (set automatically during `ccp init`):
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `CCP_HOME` | `~/.claude-profiles` | Profiles root directory |
+| `CCP_STORE` | `$CCP_HOME/.store` | Shared store location (independently configurable) |
+
+### Maintenance
+
+| Command | What happens |
+|---------|-------------|
+| `ccp gc` | Finds and removes orphaned plugins from the store (plugins no longer referenced by any profile) |
+
 ## Status Bar
 
 ccp composes with your existing Claude Code status bar (doesn't override):
@@ -345,6 +380,27 @@ Claude Code 从三个作用域加载配置：
 - Symlink 原子切换（temp + rename）
 - `export` 默认排除认证信息
 - `delete` 拒绝删除激活或默认 Profile
+
+### 插件共享存储
+
+ccp 采用类似 **pnpm 的共享存储**机制管理插件。插件实体集中存放在共享位置，各 Profile 通过 symlink 引用，避免重复复制。
+
+- `ccp init` 时自动将现有插件迁移到共享存储
+- 每个 Profile 的 `plugins/cache/` 下是 symlink，不是副本
+- Claude Code 的安装/更新/禁用操作通过 symlink 透明生效
+- 新安装的插件在 `activate` / `snapshot` 时自动迁移到共享存储
+- `ccp pause` / `ccp export` 时自动还原为真实目录
+
+**环境变量**（`ccp init` 时自动设置）：
+
+| 变量 | 默认值 | 用途 |
+|------|--------|------|
+| `CCP_HOME` | `~/.claude-profiles` | Profile 根目录 |
+| `CCP_STORE` | `$CCP_HOME/.store` | 共享存储位置（可独立配置） |
+
+| 命令 | 做了什么 |
+|------|---------|
+| `ccp gc` | 查找并删除共享存储中的孤儿插件（不再被任何 Profile 引用的插件） |
 
 ## 命令详解
 
