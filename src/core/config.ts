@@ -5,6 +5,7 @@ export interface CcpConfig {
   active: string;
   profiles: string[];
   createdAt: string;
+  store?: string;
 }
 
 export async function readConfig(configPath: string): Promise<CcpConfig> {

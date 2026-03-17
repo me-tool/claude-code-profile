@@ -3,7 +3,9 @@ import os from 'node:os';
 
 const home = os.homedir();
 
-export const PROFILES_DIR = path.join(home, '.claude-profiles');
+export const CCP_HOME = process.env.CCP_HOME || path.join(home, '.claude-profiles');
+export const CCP_STORE = process.env.CCP_STORE || path.join(CCP_HOME, '.store');
+export const PROFILES_DIR = CCP_HOME;
 export const CLAUDE_DIR = path.join(home, '.claude');
 export const CCP_CONFIG_FILE = path.join(PROFILES_DIR, '.ccp.json');
 export const CCP_LOCK_FILE = path.join(PROFILES_DIR, '.ccp.lock');
