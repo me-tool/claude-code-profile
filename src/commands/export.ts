@@ -2,7 +2,7 @@ import path from 'node:path';
 import fs from 'fs-extra';
 import { create as tarCreate } from 'tar';
 import { log } from '../utils/logger';
-import { validateProfileName } from '../core/profile';
+import { resolveProfileDir } from '../core/profile';
 import { PROFILES_DIR } from '../core/paths';
 
 const DEFAULT_EXCLUDES = [
@@ -22,10 +22,7 @@ interface ExportOptions {
 
 export async function runExport(options: ExportOptions): Promise<void> {
   const profiles = options.profilesDir ?? PROFILES_DIR;
-  const sourceDir = path.join(profiles, options.name);
-  const nameCheck = validateProfileName(options.name);
-  if (!nameCheck.valid) throw new Error(`Invalid profile name: ${nameCheck.reason}`);
-  if (!(await fs.pathExists(sourceDir))) throw new Error(`Profile "${options.name}" not found`);
+  const sourceDir = await resolveProfileDir(options.name, profiles);
 
   const excludes = [...DEFAULT_EXCLUDES];
   if (options.includeAuth) {

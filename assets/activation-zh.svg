@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 200" fill="none">
+  <defs>
+    <linearGradient id="ac-bg" x1="0" y1="0" x2="720" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f0f1a"/>
+      <stop offset="100%" stop-color="#1a1a2e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="720" height="200" rx="12" fill="url(#ac-bg)"/>
+  <rect x="1" y="1" width="718" height="198" rx="11" stroke="#313244" stroke-width="1" fill="none"/>
+
+  <!-- Left panel: activate -->
+  <rect x="20" y="14" width="335" height="172" rx="10" fill="#1e1e35" stroke="#444466" stroke-width="1"/>
+  <text x="187" y="34" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#D4A574">ccp activate &#8212; symlink &#20999;&#25442;</text>
+
+  <!-- State: before -->
+  <rect x="40" y="50" width="140" height="40" rx="6" fill="#2a2a4a" stroke="#a6e3a1" stroke-width="1.5"/>
+  <text x="110" y="67" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" font-weight="600" fill="#a6e3a1">~/.claude</text>
+  <text x="110" y="81" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">&#8594; default</text>
+
+  <!-- Arrow: activate -->
+  <line x1="180" y1="70" x2="196" y2="70" stroke="#D4A574" stroke-width="1.5"/>
+  <polygon points="194,65 204,70 194,75" fill="#D4A574"/>
+
+  <!-- State: after -->
+  <rect x="206" y="50" width="140" height="40" rx="6" fill="#2a2a4a" stroke="#D4A574" stroke-width="2"/>
+  <text x="276" y="67" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" font-weight="600" fill="#D4A574">~/.claude</text>
+  <text x="276" y="81" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">&#8594; reviewer</text>
+
+  <!-- Labels -->
+  <text x="110" y="108" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">&#20999;&#25442;&#21069;</text>
+  <text x="276" y="108" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">&#20999;&#25442;&#21518;</text>
+
+  <!-- Deactivate arrow -->
+  <path d="M 276 90 Q 276 125 193 125 Q 110 125 110 90" stroke="#a6e3a1" stroke-width="1" fill="none" stroke-dasharray="4,3"/>
+  <polygon points="106,92 110,82 114,92" fill="#a6e3a1"/>
+  <text x="193" y="138" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#a6e3a1">deactivate</text>
+
+  <!-- Note -->
+  <text x="187" y="166" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">&#20840;&#23616;&#20999;&#25442; &#8212; &#25152;&#26377;&#20250;&#35805;&#21463;&#24433;&#21709;</text>
+
+  <!-- Right panel: launch -->
+  <rect x="370" y="14" width="335" height="172" rx="10" fill="#1e1e35" stroke="#444466" stroke-width="1"/>
+  <text x="537" y="34" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#f9e2af">ccp launch &#8212; &#29615;&#22659;&#21464;&#37327;&#38548;&#31163;</text>
+
+  <!-- Unchanged default -->
+  <rect x="390" y="50" width="140" height="40" rx="6" fill="#2a2a4a" stroke="#a6e3a1" stroke-width="1.5"/>
+  <text x="460" y="67" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" font-weight="600" fill="#a6e3a1">~/.claude</text>
+  <text x="460" y="81" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">&#8594; default &#10003;</text>
+
+  <!-- Arrow: launch -->
+  <line x1="530" y1="70" x2="546" y2="70" stroke="#f9e2af" stroke-width="1.5"/>
+  <polygon points="544,65 554,70 544,75" fill="#f9e2af"/>
+
+  <!-- New instance -->
+  <rect x="556" y="50" width="140" height="40" rx="6" fill="#2a2a4a" stroke="#f9e2af" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="626" y="67" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" font-weight="600" fill="#f9e2af">&#26032; Claude</text>
+  <text x="626" y="81" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">CONFIG_DIR=work</text>
+
+  <!-- Labels -->
+  <text x="460" y="108" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">&#19981;&#21464;</text>
+  <text x="626" y="108" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">&#24182;&#34892;&#23454;&#20363;</text>
+
+  <!-- Note -->
+  <text x="537" y="140" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">&#20165;&#38480;&#26412;&#27425;&#20250;&#35805; &#8212; &#19981;&#25913;&#21464;&#20840;&#23616;&#29366;&#24577;</text>
+  <text x="537" y="166" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">&#22810;&#20010; Profile &#21487;&#21516;&#26102;&#36816;&#34892;</text>
+</svg>

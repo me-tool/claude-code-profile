@@ -1,9 +1,10 @@
 import path from 'node:path';
+import os from 'node:os';
 import fs from 'fs-extra';
 import { log } from '../utils/logger';
 import { copyDir, verifyIntegrity } from '../utils/fs';
 import { writeConfig } from '../core/config';
-import { createProfileMeta, writeProfileMeta } from '../core/profile';
+import { createProfileMeta, writeProfileMeta, injectStatusBadge } from '../core/profile';
 import { createSymlink, isSymlink } from '../core/symlink';
 import { initGit } from '../core/git';
 import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
@@ -53,22 +54,14 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
   const settingsPath = path.join(defaultProfile, 'settings.json');
   if (await fs.pathExists(settingsPath)) {
     const settings = await fs.readJson(settingsPath);
-    if (settings.statusLine) {
-      // Save original
+    const original = injectStatusBadge(settings);
+    if (original) {
       const metaPath = path.join(defaultProfile, '.profile.json');
       const existingMeta = await fs.readJson(metaPath);
-      existingMeta.originalStatusLine = settings.statusLine;
+      existingMeta.originalStatusLine = original;
       await fs.writeJson(metaPath, existingMeta, { spaces: 2 });
-
-      // Compose: prepend badge
-      const originalCmd = settings.statusLine.command;
-      settings.statusLine.command = `ccp current --badge && ${originalCmd}`;
-      await fs.writeJson(settingsPath, settings, { spaces: 2 });
-    } else {
-      // No existing statusLine, add one
-      settings.statusLine = { type: 'command', command: 'ccp current --badge' };
-      await fs.writeJson(settingsPath, settings, { spaces: 2 });
     }
+    await fs.writeJson(settingsPath, settings, { spaces: 2 });
   }
 
   log.step('Initializing version control...');
@@ -101,6 +94,52 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
     throw err;
   }
 
+  // Shell completion setup
+  const rcFile = await setupShellCompletion();
+
   log.success('ccp initialized. Active profile: default');
   log.info(`Original ~/.claude backed up to ${backup}`);
+  if (rcFile) {
+    log.info(`Shell completion added to ${rcFile}`);
+    log.info(`Run: source ${rcFile}`);
+  }
+}
+
+const COMPLETION_MARKER = '# ccp shell completion';
+
+async function setupShellCompletion(): Promise<string | null> {
+  const shell = process.env.SHELL || '';
+  const home = os.homedir();
+
+  let rcFile: string;
+  let shellType: string;
+
+  if (shell.endsWith('/zsh')) {
+    shellType = 'zsh';
+    rcFile = path.join(home, '.zshrc');
+  } else if (shell.endsWith('/bash')) {
+    shellType = 'bash';
+    // macOS: .bash_profile is loaded for login shells, .bashrc for non-login
+    const bashrc = path.join(home, '.bashrc');
+    const bashProfile = path.join(home, '.bash_profile');
+    rcFile = (await fs.pathExists(bashrc)) ? bashrc : bashProfile;
+  } else if (shell.endsWith('/fish')) {
+    shellType = 'fish';
+    rcFile = path.join(home, '.config', 'fish', 'config.fish');
+  } else {
+    return null;
+  }
+
+  if (!(await fs.pathExists(rcFile))) {
+    return null;
+  }
+
+  const content = await fs.readFile(rcFile, 'utf-8');
+  if (content.includes(COMPLETION_MARKER)) {
+    return null; // already installed
+  }
+
+  const snippet = `\n${COMPLETION_MARKER}\neval "$(ccp completion ${shellType})"\n`;
+  await fs.appendFile(rcFile, snippet);
+  return rcFile;
 }

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import path from 'node:path';
 import fs from 'fs-extra';
 import { createTempDir, cleanupTempDir } from '../helpers/setup';
-import { initGit, autoCommit, snapshot, getHistory, rollbackTo } from '../../src/core/git';
+import { initGit, autoCommit, getHistory, rollbackTo } from '../../src/core/git';
 
 describe('git', () => {
   let tempDir: string;
@@ -37,17 +37,25 @@ describe('git', () => {
     expect(committed).toBe(false);
   });
 
-  it('should create snapshot with message', async () => {
+  it('should create snapshot with custom prefix', async () => {
     await initGit(profileDir, 'init');
     await fs.writeFile(path.join(profileDir, 'CLAUDE.md'), '# Snapshot\n');
-    await snapshot(profileDir, 'manual snapshot');
+    await autoCommit(profileDir, 'manual snapshot', 'snapshot');
     const history = await getHistory(profileDir, 5);
-    expect(history[0].message).toContain('manual snapshot');
+    expect(history[0].message).toBe('snapshot: manual snapshot');
+  });
+
+  it('should use default ccp prefix', async () => {
+    await initGit(profileDir, 'init');
+    await fs.writeFile(path.join(profileDir, 'CLAUDE.md'), '# Changed2\n');
+    await autoCommit(profileDir, 'test change');
+    const history = await getHistory(profileDir, 5);
+    expect(history[0].message).toBe('ccp: test change');
   });
 
   it('should return false on snapshot with no changes', async () => {
     await initGit(profileDir, 'init');
-    const committed = await snapshot(profileDir, 'nothing');
+    const committed = await autoCommit(profileDir, 'nothing');
     expect(committed).toBe(false);
   });
 
@@ -61,7 +69,7 @@ describe('git', () => {
   it('should rollback to previous commit', async () => {
     await initGit(profileDir, 'init');
     await fs.writeFile(path.join(profileDir, 'CLAUDE.md'), '# V2\n');
-    await snapshot(profileDir, 'version 2');
+    await autoCommit(profileDir, 'version 2');
     const history = await getHistory(profileDir, 10);
     const initCommit = history[history.length - 1].hash;
     await rollbackTo(profileDir, initCommit);

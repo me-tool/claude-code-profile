@@ -1,9 +1,9 @@
 import path from 'node:path';
-import fs from 'fs-extra';
 import { log } from '../utils/logger';
 import { copyDir } from '../utils/fs';
 import { readConfig } from '../core/config';
-import { removeSymlink, isSymlink } from '../core/symlink';
+import { restoreStatusLine } from '../core/profile';
+import { removeSymlink, isSymlink, isClaudeRunning } from '../core/symlink';
 import { autoCommit } from '../core/git';
 import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
 
@@ -11,6 +11,7 @@ interface PauseOptions {
   claudeDir?: string;
   profilesDir?: string;
   skipConfirm?: boolean;
+  force?: boolean;
 }
 
 export async function runPause(options: PauseOptions = {}): Promise<void> {
@@ -20,6 +21,11 @@ export async function runPause(options: PauseOptions = {}): Promise<void> {
 
   if (!(await isSymlink(claude))) {
     throw new Error('ccp is not active (~/.claude is not a symlink)');
+  }
+
+  if (isClaudeRunning() && !options.force) {
+    log.warn('Claude Code appears to be running.');
+    throw new Error('Claude is running. Use --force to override.');
   }
 
   if (!options.skipConfirm) {
@@ -39,17 +45,7 @@ export async function runPause(options: PauseOptions = {}): Promise<void> {
   await removeSymlink(claude);
   await copyDir(activeDir, claude);
 
-  // Restore original statusLine
-  const metaPath = path.join(activeDir, '.profile.json');
-  if (await fs.pathExists(metaPath)) {
-    const meta = await fs.readJson(metaPath);
-    const settingsPath = path.join(claude, 'settings.json');
-    if (meta.originalStatusLine && await fs.pathExists(settingsPath)) {
-      const settings = await fs.readJson(settingsPath);
-      settings.statusLine = meta.originalStatusLine;
-      await fs.writeJson(settingsPath, settings, { spaces: 2 });
-    }
-  }
+  await restoreStatusLine(activeDir, claude);
 
   log.success('~/.claude restored as real directory');
   log.info(`Profiles preserved at ${profiles}`);

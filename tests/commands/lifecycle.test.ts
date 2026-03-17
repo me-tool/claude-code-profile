@@ -24,20 +24,20 @@ describe('lifecycle commands', () => {
 
   describe('pause', () => {
     it('should restore ~/.claude as real directory', async () => {
-      await runPause({ claudeDir, profilesDir, skipConfirm: true });
+      await runPause({ claudeDir, profilesDir, skipConfirm: true, force: true });
       expect(await isSymlink(claudeDir)).toBe(false);
       expect(await fs.pathExists(path.join(claudeDir, 'CLAUDE.md'))).toBe(true);
     });
 
     it('should preserve profiles directory', async () => {
-      await runPause({ claudeDir, profilesDir, skipConfirm: true });
+      await runPause({ claudeDir, profilesDir, skipConfirm: true, force: true });
       expect(await fs.pathExists(profilesDir)).toBe(true);
     });
   });
 
   describe('resume', () => {
     it('should re-establish symlink after pause', async () => {
-      await runPause({ claudeDir, profilesDir, skipConfirm: true });
+      await runPause({ claudeDir, profilesDir, skipConfirm: true, force: true });
       await runResume({ claudeDir, profilesDir, skipConfirm: true });
       expect(await isSymlink(claudeDir)).toBe(true);
     });
@@ -45,7 +45,7 @@ describe('lifecycle commands', () => {
 
   describe('uninstall', () => {
     it('should restore ~/.claude and keep profiles dir', async () => {
-      await runUninstall({ claudeDir, profilesDir, skipConfirm: true });
+      await runUninstall({ claudeDir, profilesDir, skipConfirm: true, force: true });
       expect(await isSymlink(claudeDir)).toBe(false);
       expect(await fs.pathExists(path.join(claudeDir, 'CLAUDE.md'))).toBe(true);
       expect(await fs.pathExists(profilesDir)).toBe(true);

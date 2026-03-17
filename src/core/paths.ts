@@ -16,6 +16,11 @@ export function profileConfigFile(name: string): string {
   return path.join(PROFILES_DIR, name, '.profile.json');
 }
 
+export const CLAUDE_MD_EXCLUDES = [
+  path.join(CLAUDE_DIR, 'CLAUDE.md'),
+  path.join(CLAUDE_DIR, 'rules', '**'),
+];
+
 export const GITIGNORE_TEMPLATE = `# Sensitive
 settings.local.json
 credentials.json

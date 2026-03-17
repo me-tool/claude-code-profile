@@ -24,17 +24,26 @@
     <text x="30" y="38" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="24" font-weight="bold" fill="url(#accent)">P</text>
   </g>
 
-  <!-- Title -->
+  <!-- Title + ccp badge -->
   <text x="140" y="65" font-family="Inter, -apple-system, sans-serif" font-size="32" font-weight="700" fill="url(#text-grad)">Claude Code Profile</text>
+  <rect x="468" y="44" width="48" height="26" rx="6" fill="#D4A574" opacity="0.15"/>
+  <text x="492" y="62" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="13" font-weight="600" fill="#D4A574">ccp</text>
 
   <!-- Subtitle -->
-  <text x="140" y="95" font-family="Inter, -apple-system, sans-serif" font-size="15" fill="#8888aa">Chrome-like profile management for Claude Code</text>
+  <text x="140" y="95" font-family="Inter, -apple-system, sans-serif" font-size="15" fill="#8888aa">Conda-like profile management for Claude Code</text>
 
-  <!-- Badge: ccp -->
-  <rect x="140" y="108" width="48" height="24" rx="6" fill="#D4A574" opacity="0.15"/>
-  <text x="164" y="124" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="12" font-weight="600" fill="#D4A574">ccp</text>
+  <!-- Tech tags -->
+  <g transform="translate(140, 110)">
+    <rect x="0" y="0" width="64" height="22" rx="4" fill="#a6e3a1" opacity="0.12"/>
+    <text x="32" y="15" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#a6e3a1">symlink</text>
 
-  <!-- Version badge -->
-  <rect x="198" y="108" width="56" height="24" rx="6" fill="#4488ff" opacity="0.15"/>
-  <text x="226" y="124" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="12" font-weight="600" fill="#6699ff">v0.1.0</text>
+    <rect x="72" y="0" width="38" height="22" rx="4" fill="#89b4fa" opacity="0.12"/>
+    <text x="91" y="15" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#89b4fa">git</text>
+
+    <rect x="118" y="0" width="82" height="22" rx="4" fill="#f9e2af" opacity="0.12"/>
+    <text x="159" y="15" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#f9e2af">concurrent</text>
+
+    <rect x="208" y="0" width="72" height="22" rx="4" fill="#cba6f7" opacity="0.12"/>
+    <text x="244" y="15" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="10" fill="#cba6f7">atomic</text>
+  </g>
 </svg>

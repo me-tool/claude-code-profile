@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import { log } from '../utils/logger';
 import { readConfig } from '../core/config';
 import { createSymlink, isSymlink } from '../core/symlink';
+import { injectStatusBadge } from '../core/profile';
 import { autoCommit } from '../core/git';
 import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
 
@@ -30,6 +31,15 @@ export async function runResume(options: ResumeOptions = {}): Promise<void> {
   log.info('Resuming ccp management...');
   log.step('Syncing changes made during pause...');
   await fs.copy(claude, activeDir, { overwrite: true, preserveTimestamps: true });
+
+  // Restore ccp badge in statusLine (pause stripped it)
+  const settingsPath = path.join(activeDir, 'settings.json');
+  if (await fs.pathExists(settingsPath)) {
+    const settings = await fs.readJson(settingsPath);
+    injectStatusBadge(settings);
+    await fs.writeJson(settingsPath, settings, { spaces: 2 });
+  }
+
   await autoCommit(activeDir, 'auto: sync changes from pause period');
 
   await fs.remove(claude);

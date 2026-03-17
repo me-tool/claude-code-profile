@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 200" fill="none">
+  <defs>
+    <linearGradient id="pm-bg" x1="0" y1="0" x2="720" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f0f1a"/>
+      <stop offset="100%" stop-color="#1a1a2e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="720" height="200" rx="12" fill="url(#pm-bg)"/>
+  <rect x="1" y="1" width="718" height="198" rx="11" stroke="#313244" stroke-width="1" fill="none"/>
+
+  <!-- Title -->
+  <text x="360" y="28" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#cdd6f4">Profile Creation Paths</text>
+
+  <!-- Column 1: empty create -->
+  <rect x="30" y="50" width="200" height="40" rx="6" fill="#2a2a4a" stroke="#a6e3a1" stroke-width="1.5"/>
+  <text x="130" y="74" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" font-weight="600" fill="#a6e3a1">ccp create reviewer</text>
+
+  <line x1="130" y1="90" x2="130" y2="110" stroke="#a6e3a1" stroke-width="1.5"/>
+  <polygon points="125,108 130,118 135,108" fill="#a6e3a1"/>
+  <text x="140" y="106" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">empty</text>
+
+  <rect x="30" y="120" width="200" height="40" rx="6" fill="#1e1e35" stroke="#444466" stroke-width="1"/>
+  <text x="130" y="144" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" fill="#cdd6f4">profiles/reviewer</text>
+
+  <!-- Column 2: clone -->
+  <rect x="260" y="50" width="200" height="40" rx="6" fill="#2a2a4a" stroke="#89b4fa" stroke-width="1.5"/>
+  <text x="360" y="68" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" font-weight="600" fill="#89b4fa">ccp create work</text>
+  <text x="360" y="82" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">--from default</text>
+
+  <line x1="360" y1="90" x2="360" y2="110" stroke="#89b4fa" stroke-width="1.5"/>
+  <polygon points="355,108 360,118 365,108" fill="#89b4fa"/>
+  <text x="375" y="106" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">full clone</text>
+
+  <rect x="260" y="120" width="200" height="40" rx="6" fill="#1e1e35" stroke="#444466" stroke-width="1"/>
+  <text x="360" y="144" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" fill="#cdd6f4">profiles/work</text>
+
+  <!-- Column 3: interactive -->
+  <rect x="490" y="50" width="200" height="40" rx="6" fill="#2a2a4a" stroke="#cba6f7" stroke-width="1.5"/>
+  <text x="590" y="74" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" font-weight="600" fill="#cba6f7">ccp create qa</text>
+
+  <line x1="590" y1="90" x2="590" y2="110" stroke="#cba6f7" stroke-width="1.5"/>
+  <polygon points="585,108 590,118 595,108" fill="#cba6f7"/>
+  <text x="607" y="106" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">interactive</text>
+
+  <rect x="490" y="120" width="200" height="40" rx="6" fill="#1e1e35" stroke="#444466" stroke-width="1"/>
+  <text x="590" y="138" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">pick: auth? plugins?</text>
+  <text x="590" y="152" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">skills? hooks? mcp?</text>
+
+  <!-- Legend -->
+  <g transform="translate(30, 176)">
+    <rect x="0" y="0" width="10" height="10" rx="2" fill="none" stroke="#a6e3a1" stroke-width="1.5"/>
+    <text x="16" y="9" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">Empty profile</text>
+    <rect x="140" y="0" width="10" height="10" rx="2" fill="none" stroke="#89b4fa" stroke-width="1.5"/>
+    <text x="156" y="9" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">Full clone</text>
+    <rect x="250" y="0" width="10" height="10" rx="2" fill="none" stroke="#cba6f7" stroke-width="1.5"/>
+    <text x="266" y="9" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">Selective import</text>
+  </g>
+</svg>
