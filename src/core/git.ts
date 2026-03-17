@@ -7,6 +7,8 @@ export async function initGit(dir: string, message: string): Promise<void> {
   await fs.writeFile(path.join(dir, '.gitignore'), GITIGNORE_TEMPLATE);
   const git = simpleGit(dir);
   await git.init();
+  await git.addConfig('user.name', 'ccp');
+  await git.addConfig('user.email', 'ccp@local');
   await git.add('.');
   await git.commit(`ccp: ${message}`);
 }
