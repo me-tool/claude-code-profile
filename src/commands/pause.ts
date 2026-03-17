@@ -6,6 +6,7 @@ import { restoreStatusLine } from '../core/profile';
 import { removeSymlink, isSymlink, isClaudeRunning } from '../core/symlink';
 import { autoCommit } from '../core/git';
 import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
+import { dereferencePlugins } from '../core/store';
 
 interface PauseOptions {
   claudeDir?: string;
@@ -44,6 +45,7 @@ export async function runPause(options: PauseOptions = {}): Promise<void> {
   log.step('Restoring ~/.claude as real directory...');
   await removeSymlink(claude);
   await copyDir(activeDir, claude);
+  await dereferencePlugins(claude);
 
   await restoreStatusLine(activeDir, claude);
 

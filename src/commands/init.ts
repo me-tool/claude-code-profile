@@ -7,7 +7,8 @@ import { writeConfig } from '../core/config';
 import { createProfileMeta, writeProfileMeta, injectStatusBadge } from '../core/profile';
 import { createSymlink, isSymlink } from '../core/symlink';
 import { initGit } from '../core/git';
-import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
+import { PROFILES_DIR, CLAUDE_DIR, CCP_STORE } from '../core/paths';
+import { migratePluginsToStore, migrateMarketplacesToStore } from '../core/store';
 
 interface InitOptions {
   claudeDir?: string;
@@ -64,6 +65,13 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
     await fs.writeJson(settingsPath, settings, { spaces: 2 });
   }
 
+  // Migrate plugins to shared store
+  const storeDir = CCP_STORE;
+  log.step('Setting up shared plugin store...');
+  await fs.ensureDir(path.join(storeDir, 'cache'));
+  await migratePluginsToStore(defaultProfile, storeDir);
+  await migrateMarketplacesToStore(defaultProfile, storeDir);
+
   log.step('Initializing version control...');
   await initGit(defaultProfile, 'init default profile');
 
@@ -79,10 +87,11 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
     await createSymlink(defaultProfile, claude);
 
     await writeConfig(configFile, {
-      version: 1,
+      version: 2,
       active: 'default',
       profiles: ['default'],
       createdAt: new Date().toISOString(),
+      store: storeDir,
     });
   } catch (err) {
     // Rollback: if claude dir was removed, restore from backup or defaultProfile
@@ -139,7 +148,7 @@ async function setupShellCompletion(): Promise<string | null> {
     return null; // already installed
   }
 
-  const snippet = `\n${COMPLETION_MARKER}\neval "$(ccp completion ${shellType})"\n`;
+  const snippet = `\n${COMPLETION_MARKER}\neval "$(ccp completion ${shellType})"\nexport CCP_HOME="${path.join(home, '.claude-profiles')}"\nexport CCP_STORE="${CCP_STORE}"\n`;
   await fs.appendFile(rcFile, snippet);
   return rcFile;
 }

@@ -21,6 +21,7 @@ import { runSnapshot } from '../src/commands/snapshot';
 import { runHistory } from '../src/commands/history';
 import { runRollback } from '../src/commands/rollback';
 import { runDoctor } from '../src/commands/doctor';
+import { runGc } from '../src/commands/gc';
 import { getErrorMessage } from '../src/utils/logger';
 import pkg from '../package.json';
 
@@ -333,6 +334,19 @@ program
   .action(async () => {
     try {
       await runDoctor();
+    } catch (err: unknown) {
+      console.error(getErrorMessage(err));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('gc')
+  .description('Clean up orphaned plugins from shared store')
+  .option('-y, --yes', 'Skip confirmation')
+  .action(async (opts) => {
+    try {
+      await runGc({ skipConfirm: opts.yes });
     } catch (err: unknown) {
       console.error(getErrorMessage(err));
       process.exit(1);

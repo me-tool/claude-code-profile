@@ -5,7 +5,8 @@ import { log } from '../utils/logger';
 import { readConfig } from '../core/config';
 import { isSymlink, verifySymlink } from '../core/symlink';
 import { validateProfileDir } from '../core/profile';
-import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
+import { PROFILES_DIR, CLAUDE_DIR, CCP_STORE } from '../core/paths';
+import { findOrphanedStoreEntries } from '../core/store';
 import simpleGit from 'simple-git';
 
 interface DoctorOptions {
@@ -77,6 +78,50 @@ export async function runDoctor(options: DoctorOptions = {}): Promise<void> {
       }
     }
     if (allDirsExist) pass('All profile directories exist');
+
+    // Plugin store checks
+    log.plain('\nPlugin Store:');
+    const storeDir = config.store || CCP_STORE;
+
+    if (await fs.pathExists(storeDir)) {
+      pass(`Store directory exists: ${storeDir}`);
+
+      for (const name of config.profiles) {
+        const cacheDir = path.join(profiles, name, 'plugins', 'cache');
+        if (!await fs.pathExists(cacheDir)) continue;
+        const mpEntries = await fs.readdir(cacheDir);
+        for (const marketplace of mpEntries) {
+          const mpDir = path.join(cacheDir, marketplace);
+          const mpStat = await fs.lstat(mpDir);
+          if (!mpStat.isDirectory() || mpStat.isSymbolicLink()) continue;
+          const pluginEntries = await fs.readdir(mpDir);
+          for (const plugin of pluginEntries) {
+            const pluginPath = path.join(mpDir, plugin);
+            const pStat = await fs.lstat(pluginPath);
+            if (pStat.isSymbolicLink()) {
+              const target = await fs.readlink(pluginPath);
+              if (!await fs.pathExists(target)) {
+                fail(`Profile "${name}": dangling symlink ${plugin} -> ${target}`);
+              }
+            } else if (pStat.isDirectory()) {
+              warn(`Profile "${name}": plugin "${plugin}" not in store (run activate/snapshot to migrate)`);
+            }
+          }
+        }
+      }
+
+      const profileDirs = config.profiles.map(n => path.join(profiles, n));
+      const orphans = await findOrphanedStoreEntries(storeDir, profileDirs);
+      if (orphans.length > 0) {
+        warn(`${orphans.length} orphaned plugin(s) in store (run "ccp gc" to clean)`);
+      }
+    } else {
+      warn(`Store directory not found: ${storeDir}`);
+    }
+
+    if (!process.env.CCP_HOME) {
+      warn('CCP_HOME environment variable not set. Run "source ~/.zshrc" or restart shell.');
+    }
   } else {
     fail('.ccp.json not found');
   }

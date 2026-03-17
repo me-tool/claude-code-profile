@@ -6,6 +6,7 @@ import { readConfig, addProfile } from '../core/config';
 import { createProfileMeta, writeProfileMeta, validateProfileName, injectStatusBadge } from '../core/profile';
 import { initGit } from '../core/git';
 import { importItems } from '../core/importer';
+import { migratePluginsToStore, migrateMarketplacesToStore } from '../core/store';
 import { PROFILES_DIR, CLAUDE_MD_EXCLUDES } from '../core/paths';
 
 interface CreateOptions {
@@ -53,6 +54,13 @@ export async function runCreate(options: CreateOptions): Promise<void> {
     log.step(`Cloning from "${options.from}"...`);
     await copyDir(sourceDir, targetDir);
     await fs.remove(path.join(targetDir, '.git'));
+
+    // Re-migrate plugins to store (copyDir may have dereferenced symlinks)
+    const config = await readConfig(path.join(profiles, '.ccp.json'));
+    if (config.store) {
+      await migratePluginsToStore(targetDir, config.store);
+      await migrateMarketplacesToStore(targetDir, config.store);
+    }
 
     // Ensure cloned profile has isolation settings
     const settingsPath = path.join(targetDir, 'settings.json');
