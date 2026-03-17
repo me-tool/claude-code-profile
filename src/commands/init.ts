@@ -7,7 +7,7 @@ import { writeConfig } from '../core/config';
 import { createProfileMeta, writeProfileMeta, injectStatusBadge } from '../core/profile';
 import { createSymlink, isSymlink } from '../core/symlink';
 import { initGit } from '../core/git';
-import { PROFILES_DIR, CLAUDE_DIR, CCP_STORE } from '../core/paths';
+import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
 import { migratePluginsToStore, migrateMarketplacesToStore } from '../core/store';
 
 interface InitOptions {
@@ -66,7 +66,7 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
   }
 
   // Migrate plugins to shared store
-  const storeDir = CCP_STORE;
+  const storeDir = process.env.CCP_STORE || path.join(profiles, '.store');
   log.step('Setting up shared plugin store...');
   await fs.ensureDir(path.join(storeDir, 'cache'));
   await migratePluginsToStore(defaultProfile, storeDir);
@@ -148,7 +148,7 @@ async function setupShellCompletion(): Promise<string | null> {
     return null; // already installed
   }
 
-  const snippet = `\n${COMPLETION_MARKER}\neval "$(ccp completion ${shellType})"\nexport CCP_HOME="${path.join(home, '.claude-profiles')}"\nexport CCP_STORE="${CCP_STORE}"\n`;
+  const snippet = `\n${COMPLETION_MARKER}\neval "$(ccp completion ${shellType})"\nexport CCP_HOME="${path.join(home, '.claude-profiles')}"\nexport CCP_STORE="${path.join(home, '.claude-profiles', '.store')}"\n`;
   await fs.appendFile(rcFile, snippet);
   return rcFile;
 }
