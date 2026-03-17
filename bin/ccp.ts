@@ -28,7 +28,9 @@ const program = new Command();
 program
   .name('ccp')
   .description('Claude Code Profile -- Chrome-like profile management for Claude Code')
-  .version('0.1.0');
+  .version('0.2.0')
+  .option('-v', 'Output version number')
+  .on('option:v', () => { console.log('0.2.0'); process.exit(0); });
 
 // --- Lifecycle ---
 
@@ -88,6 +90,7 @@ program
 
 program
   .command('create')
+  .alias('add')
   .description('Create a new profile')
   .argument('<name>', 'Profile name')
   .option('--from <profile>', 'Clone from existing profile')
@@ -104,6 +107,7 @@ program
 
 program
   .command('delete')
+  .alias('remove')
   .description('Delete a profile')
   .argument('<name>', 'Profile name')
   .option('-y, --yes', 'Skip confirmation')
@@ -201,6 +205,7 @@ program
 
 program
   .command('launch')
+  .alias('run')
   .description('Launch Claude with a specific profile (without switching)')
   .argument('<name>', 'Profile name')
   .action(async (name) => {

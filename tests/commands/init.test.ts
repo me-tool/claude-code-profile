@@ -43,8 +43,8 @@ describe('init command', () => {
 
   it('should create backup of original claude dir', async () => {
     await runInit({ claudeDir, profilesDir, skipConfirm: true });
-    const entries = await fs.readdir(tempDir);
-    const backups = entries.filter(e => e.startsWith('.claude-backup-'));
+    const entries = await fs.readdir(profilesDir);
+    const backups = entries.filter(e => e.startsWith('.backup-'));
     expect(backups.length).toBe(1);
   });
 

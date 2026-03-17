@@ -74,10 +74,9 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
   log.step('Initializing version control...');
   await initGit(defaultProfile, 'init default profile');
 
-  // Backup - use parent dir of claude for the backup location
-  const parentDir = path.dirname(claude);
+  // Backup - store inside .claude-profiles for cohesion
   const ts = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
-  const backup = path.join(parentDir, `.claude-backup-${ts}`);
+  const backup = path.join(profiles, `.backup-${ts}`);
   log.step(`Backing up original to ${backup}...`);
   await fs.copy(claude, backup);
 

@@ -6,7 +6,7 @@ import { readConfig, addProfile } from '../core/config';
 import { createProfileMeta, writeProfileMeta, validateProfileName } from '../core/profile';
 import { initGit } from '../core/git';
 import { importItems } from '../core/importer';
-import { PROFILES_DIR } from '../core/paths';
+import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
 
 interface CreateOptions {
   name: string;
@@ -53,11 +53,32 @@ export async function runCreate(options: CreateOptions): Promise<void> {
     log.step(`Cloning from "${options.from}"...`);
     await copyDir(sourceDir, targetDir);
     await fs.remove(path.join(targetDir, '.git'));
+
+    // Ensure cloned profile has isolation settings
+    const settingsPath = path.join(targetDir, 'settings.json');
+    const clonedSettings = await fs.pathExists(settingsPath)
+      ? await fs.readJson(settingsPath)
+      : {};
+    clonedSettings.claudeMdExcludes = [
+      path.join(CLAUDE_DIR, 'CLAUDE.md'),
+      path.join(CLAUDE_DIR, 'rules', '**'),
+    ];
+    if (!clonedSettings.statusLine) {
+      clonedSettings.statusLine = { type: 'command', command: 'ccp current --badge' };
+    }
+    await fs.writeJson(settingsPath, clonedSettings, { spaces: 2 });
   } else {
     // Empty profile or selective import
     await fs.ensureDir(targetDir);
     await fs.writeFile(path.join(targetDir, 'CLAUDE.md'), '');
-    await fs.writeJson(path.join(targetDir, 'settings.json'), {}, { spaces: 2 });
+    const profileSettings: Record<string, unknown> = {
+      claudeMdExcludes: [
+        path.join(CLAUDE_DIR, 'CLAUDE.md'),
+        path.join(CLAUDE_DIR, 'rules', '**'),
+      ],
+      statusLine: { type: 'command', command: 'ccp current --badge' },
+    };
+    await fs.writeJson(path.join(targetDir, 'settings.json'), profileSettings, { spaces: 2 });
 
     if (options.from && options.importItems && options.importItems.length > 0) {
       const sourceDir = path.join(profiles, options.from);

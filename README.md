@@ -78,6 +78,31 @@ ccp current
 
 Each profile directory is a complete `~/.claude` equivalent with its own git repository for automatic version control.
 
+### How Profile Isolation Works
+
+Claude Code loads configuration from three scopes:
+
+| Scope | Path | Overridden by `CLAUDE_CONFIG_DIR`? |
+|-------|------|------------------------------------|
+| **User** | `~/.claude/` | Yes |
+| **Project** | `.claude/` in CWD + parent dirs | No |
+| **Managed** | `/Library/Application Support/ClaudeCode/` | No |
+
+**The problem**: When `ccp launch` sets `CLAUDE_CONFIG_DIR` to a different profile, the User scope is correctly redirected. However, Claude Code also traverses parent directories looking for project-level config. When it reaches `~/`, it finds `~/.claude/CLAUDE.md` (a symlink to the default profile) and loads it as a **Project-scope** file — leaking the default profile's configuration.
+
+**The solution**: ccp automatically configures [`claudeMdExcludes`](https://docs.anthropic.com/en/docs/claude-code/settings) in each non-default profile's `settings.json`:
+
+```json
+{
+  "claudeMdExcludes": [
+    "/Users/you/.claude/CLAUDE.md",
+    "/Users/you/.claude/rules/**"
+  ]
+}
+```
+
+This tells Claude Code to skip those paths during parent directory traversal. Combined with `CLAUDE_CONFIG_DIR`, this achieves complete isolation — enabling **concurrent multi-profile sessions** without symlink swapping or file locks.
+
 ## Commands
 
 ### Lifecycle
@@ -93,9 +118,9 @@ Each profile directory is a complete `~/.claude` equivalent with its own git rep
 
 | Command | Description |
 |---------|-------------|
-| `ccp create <name>` | Create profile (interactive: select source + items to import) |
+| `ccp create <name>` | Create profile (interactive: select source + items to import). Alias: `add` |
 | `ccp create <name> --from <profile>` | Full clone from existing profile |
-| `ccp delete <name>` | Delete profile (with confirmation) |
+| `ccp delete <name>` | Delete profile (with confirmation). Alias: `remove` |
 | `ccp list` | List all profiles, mark active |
 | `ccp info <name>` | Show profile details and disk usage |
 | `ccp rename <old> <new>` | Rename a profile |
@@ -107,7 +132,7 @@ Each profile directory is a complete `~/.claude` equivalent with its own git rep
 |---------|-------------|
 | `ccp activate <name>` | Switch active profile (changes symlink) |
 | `ccp deactivate` | Return to default profile |
-| `ccp launch <name>` | Start Claude with this profile without switching (via `CLAUDE_CONFIG_DIR`) |
+| `ccp launch <name>` | Start Claude with this profile without switching (via `CLAUDE_CONFIG_DIR`). Alias: `run` |
 | `ccp current` | Show current active profile |
 | `ccp current --badge` | Output `[name]` for status bar integration |
 
@@ -260,6 +285,20 @@ ccp current
 - **主要方式**：`ccp activate` — Symlink 切换（原子操作）
 - **并行方式**：`ccp launch` — 通过 `CLAUDE_CONFIG_DIR` 环境变量启动独立实例
 
+### Profile 隔离原理
+
+Claude Code 从三个作用域加载配置：
+
+| 作用域 | 路径 | 受 `CLAUDE_CONFIG_DIR` 影响？ |
+|--------|------|------------------------------|
+| **User** | `~/.claude/` | 是 |
+| **Project** | CWD 及父目录的 `.claude/` | 否 |
+| **Managed** | `/Library/Application Support/ClaudeCode/` | 否 |
+
+**问题**：`ccp launch` 通过 `CLAUDE_CONFIG_DIR` 将 User 作用域重定向到目标 Profile。但 Claude Code 还会遍历父目录查找项目级配置——当遍历到 `~/` 时，发现 `~/.claude/CLAUDE.md`（指向 default Profile 的 symlink），会作为 **Project 作用域** 加载，导致 default 的配置泄漏到其他 Profile。
+
+**解决方案**：ccp 在创建非 default Profile 时，自动在 `settings.json` 中配置 `claudeMdExcludes`，告诉 Claude Code 在父目录遍历时跳过 `~/.claude/CLAUDE.md` 和 `~/.claude/rules/**`。配合 `CLAUDE_CONFIG_DIR`，实现完整的 Profile 隔离——**支持并发多 Profile 会话**，无需切换 symlink 或文件锁。
+
 ### 版本控制
 每个 Profile 目录是一个 Git 仓库：
 - 切换 Profile 时自动快照
@@ -279,15 +318,15 @@ ccp current
 ccp init                          初始化，迁移 ~/.claude
 ccp pause / resume / uninstall    暂停 / 恢复 / 卸载
 
-ccp create <name>                 创建 Profile（交互式）
+ccp create|add <name>             创建 Profile（交互式）
 ccp create <name> --from <src>    从现有 Profile 克隆
-ccp delete / list / info          删除 / 列表 / 详情
+ccp delete|remove / list / info   删除 / 列表 / 详情
 ccp rename <old> <new>            重命名
 ccp copy <src> <dst>              复制
 
 ccp activate <name>               切换 Profile
 ccp deactivate                    回到 default
-ccp launch <name>                 并行启动
+ccp launch|run <name>             并行启动
 ccp current [--badge]             当前 Profile
 
 ccp import <target> --from <src>  选择性导入
