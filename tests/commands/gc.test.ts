@@ -59,6 +59,28 @@ describe('gc command', () => {
     expect(await fs.pathExists(storeA)).toBe(true);
   });
 
+  it('should not delete entries referenced by any profile', async () => {
+    const storePlugin = path.join(storeDir, 'cache', 'official', 'shared-plugin');
+    await fs.ensureDir(path.join(storePlugin, '1.0'));
+
+    // Both profiles reference the same store entry
+    for (const name of ['default', 'work']) {
+      const cacheDir = path.join(profilesDir, name, 'plugins', 'cache', 'official');
+      await fs.ensureDir(cacheDir);
+      await fs.symlink(storePlugin, path.join(cacheDir, 'shared-plugin'));
+    }
+
+    await fs.writeJson(path.join(profilesDir, '.ccp.json'), {
+      version: 2, active: 'default', profiles: ['default', 'work'],
+      createdAt: new Date().toISOString(), store: storeDir,
+    });
+
+    await runGc({ profilesDir, skipConfirm: true });
+
+    // Should still exist — referenced by both profiles
+    expect(await fs.pathExists(storePlugin)).toBe(true);
+  });
+
   it('should clean up empty marketplace directories', async () => {
     const storeOrphan = path.join(storeDir, 'cache', 'empty-marketplace', 'orphan');
     await fs.ensureDir(path.join(storeOrphan, '1.0'));

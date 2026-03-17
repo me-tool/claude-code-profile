@@ -8,7 +8,7 @@ import { createProfileMeta, writeProfileMeta, injectStatusBadge } from '../core/
 import { createSymlink, isSymlink } from '../core/symlink';
 import { initGit } from '../core/git';
 import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
-import { migratePluginsToStore, migrateMarketplacesToStore } from '../core/store';
+import { syncProfileToStore } from '../core/store';
 
 interface InitOptions {
   claudeDir?: string;
@@ -69,8 +69,7 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
   const storeDir = process.env.CCP_STORE || path.join(profiles, '.store');
   log.step('Setting up shared plugin store...');
   await fs.ensureDir(path.join(storeDir, 'cache'));
-  await migratePluginsToStore(defaultProfile, storeDir);
-  await migrateMarketplacesToStore(defaultProfile, storeDir);
+  await syncProfileToStore(defaultProfile, storeDir);
 
   log.step('Initializing version control...');
   await initGit(defaultProfile, 'init default profile');

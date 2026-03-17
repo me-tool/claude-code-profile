@@ -66,7 +66,7 @@ export async function runExport(options: ExportOptions): Promise<void> {
       [options.name],
     );
   } finally {
-    await fs.remove(tmpExportDir);
+    await fs.remove(tmpExportDir).catch(() => {});
   }
 
   log.success(`Profile exported to ${outputPath}`);

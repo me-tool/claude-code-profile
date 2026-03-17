@@ -5,7 +5,7 @@ import { readConfig } from '../core/config';
 import { importItems } from '../core/importer';
 import { validateProfileName } from '../core/profile';
 import { autoCommit } from '../core/git';
-import { migratePluginsToStore, migrateMarketplacesToStore } from '../core/store';
+import { syncProfileToStore } from '../core/store';
 import { PROFILES_DIR } from '../core/paths';
 
 interface ImportOptions {
@@ -41,10 +41,7 @@ export async function runImport(options: ImportOptions): Promise<void> {
 
   if (options.items.includes('plugins')) {
     const config = await readConfig(path.join(profiles, '.ccp.json'));
-    if (config.store) {
-      await migratePluginsToStore(targetDir, config.store);
-      await migrateMarketplacesToStore(targetDir, config.store);
-    }
+    await syncProfileToStore(targetDir, config.store);
   }
 
   await autoCommit(targetDir, `import ${options.items.join(', ')} from "${options.from}"`);

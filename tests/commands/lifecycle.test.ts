@@ -66,16 +66,14 @@ describe('lifecycle commands', () => {
       // Pause — should dereference
       await runPause({ claudeDir, profilesDir, skipConfirm: true, force: true });
       const pausedPlugin = path.join(claudeDir, 'plugins', 'cache', 'official', 'test-plugin');
-      if (await fs.pathExists(pausedPlugin)) {
-        expect((await fs.lstat(pausedPlugin)).isSymbolicLink()).toBe(false);
-      }
+      expect(await fs.pathExists(pausedPlugin)).toBe(true);
+      expect((await fs.lstat(pausedPlugin)).isSymbolicLink()).toBe(false);
 
       // Resume — should re-migrate
       await runResume({ claudeDir, profilesDir, skipConfirm: true });
       const resumedPlugin = path.join(profilesDir, 'default', 'plugins', 'cache', 'official', 'test-plugin');
-      if (await fs.pathExists(resumedPlugin)) {
-        expect((await fs.lstat(resumedPlugin)).isSymbolicLink()).toBe(true);
-      }
+      expect(await fs.pathExists(resumedPlugin)).toBe(true);
+      expect((await fs.lstat(resumedPlugin)).isSymbolicLink()).toBe(true);
 
       // Store still intact
       expect(await fs.pathExists(path.join(storeDir, 'cache', 'official', 'test-plugin', '1.0', 'plugin.json'))).toBe(true);

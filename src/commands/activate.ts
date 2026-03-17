@@ -6,7 +6,7 @@ import { switchSymlink, isClaudeRunning } from '../core/symlink';
 import { autoCommit } from '../core/git';
 import { acquireLock } from '../core/lock';
 import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
-import { migratePluginsToStore, migrateMarketplacesToStore } from '../core/store';
+import { syncProfileToStore } from '../core/store';
 
 interface ActivateOptions {
   name: string;
@@ -38,10 +38,7 @@ export async function runActivate(options: ActivateOptions): Promise<void> {
   try {
     const currentDir = path.join(profiles, config.active);
     log.step(`Snapshotting "${config.active}"...`);
-    if (config.store) {
-      await migratePluginsToStore(currentDir, config.store);
-      await migrateMarketplacesToStore(currentDir, config.store);
-    }
+    await syncProfileToStore(currentDir, config.store);
     await autoCommit(currentDir, 'auto: snapshot before deactivate');
     log.step(`Switching to "${options.name}"...`);
     await switchSymlink(targetDir, claude);

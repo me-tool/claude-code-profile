@@ -51,7 +51,7 @@ export async function runGc(options: GcOptions = {}): Promise<void> {
       const mpDir = path.join(storeCacheDir, marketplace);
       const remaining = await fs.readdir(mpDir);
       if (remaining.length === 0) {
-        await fs.remove(mpDir);
+        await fs.rmdir(mpDir).catch(() => {});
       }
     }
   }

@@ -6,7 +6,7 @@ import { createSymlink, isSymlink } from '../core/symlink';
 import { injectStatusBadge } from '../core/profile';
 import { autoCommit } from '../core/git';
 import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
-import { migratePluginsToStore, migrateMarketplacesToStore } from '../core/store';
+import { syncProfileToStore } from '../core/store';
 
 interface ResumeOptions {
   claudeDir?: string;
@@ -41,10 +41,7 @@ export async function runResume(options: ResumeOptions = {}): Promise<void> {
     await fs.writeJson(settingsPath, settings, { spaces: 2 });
   }
 
-  if (config.store) {
-    await migratePluginsToStore(activeDir, config.store);
-    await migrateMarketplacesToStore(activeDir, config.store);
-  }
+  await syncProfileToStore(activeDir, config.store);
   await autoCommit(activeDir, 'auto: sync changes from pause period');
 
   await fs.remove(claude);

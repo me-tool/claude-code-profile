@@ -4,6 +4,16 @@ import { isSymlink } from './symlink';
 import { log } from '../utils/logger';
 
 /**
+ * Convenience wrapper: migrate both plugins and marketplaces to store.
+ * No-op if storeDir is undefined (store not configured).
+ */
+export async function syncProfileToStore(profileDir: string, storeDir?: string): Promise<void> {
+  if (!storeDir) return;
+  await migratePluginsToStore(profileDir, storeDir);
+  await migrateMarketplacesToStore(profileDir, storeDir);
+}
+
+/**
  * Migrate non-symlink plugin dirs from profile's plugins/cache/ to shared store.
  * Each plugin-name dir (e.g., superpowers/) becomes a symlink to the store.
  */
