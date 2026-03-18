@@ -13,21 +13,12 @@ export async function initGit(dir: string, message: string): Promise<void> {
   await git.commit(`ccp: ${message}`);
 }
 
-export async function autoCommit(dir: string, message: string): Promise<boolean> {
+export async function autoCommit(dir: string, message: string, prefix = 'ccp'): Promise<boolean> {
   const git = simpleGit(dir);
   const status = await git.status();
   if (status.isClean()) return false;
   await git.add('.');
-  await git.commit(`ccp: ${message}`);
-  return true;
-}
-
-export async function snapshot(dir: string, message: string): Promise<boolean> {
-  const git = simpleGit(dir);
-  const status = await git.status();
-  if (status.isClean()) return false;
-  await git.add('.');
-  await git.commit(`snapshot: ${message}`);
+  await git.commit(`${prefix}: ${message}`);
   return true;
 }
 

@@ -1,10 +1,11 @@
 import path from 'node:path';
 import fs from 'fs-extra';
 import { log } from '../utils/logger';
-import { addProfile } from '../core/config';
+import { readConfig, addProfile } from '../core/config';
 import { copyDir } from '../utils/fs';
 import { createProfileMeta, writeProfileMeta, validateProfileName } from '../core/profile';
 import { initGit } from '../core/git';
+import { syncProfileToStore, resolveStoreDir } from '../core/store';
 import { PROFILES_DIR } from '../core/paths';
 
 interface CopyOptions {
@@ -30,6 +31,10 @@ export async function runCopy(options: CopyOptions): Promise<void> {
 
   // Remove old git history and re-init
   await fs.remove(path.join(targetDir, '.git'));
+
+  // Re-migrate plugins to store
+  const config = await readConfig(configFile);
+  await syncProfileToStore(targetDir, resolveStoreDir(config, profiles));
 
   const meta = createProfileMeta(options.targetName, {
     description: options.description,

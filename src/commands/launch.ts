@@ -1,9 +1,6 @@
-import path from 'node:path';
-import fs from 'fs-extra';
 import { spawnSync } from 'node:child_process';
 import { log } from '../utils/logger';
-import { validateProfileName } from '../core/profile';
-import { PROFILES_DIR } from '../core/paths';
+import { resolveProfileDir } from '../core/profile';
 
 interface LaunchOptions {
   name: string;
@@ -11,11 +8,7 @@ interface LaunchOptions {
 }
 
 export async function runLaunch(options: LaunchOptions): Promise<void> {
-  const profiles = options.profilesDir ?? PROFILES_DIR;
-  const targetDir = path.join(profiles, options.name);
-  const nameCheck = validateProfileName(options.name);
-  if (!nameCheck.valid) throw new Error(`Invalid profile name: ${nameCheck.reason}`);
-  if (!(await fs.pathExists(targetDir))) throw new Error(`Profile "${options.name}" not found`);
+  const targetDir = await resolveProfileDir(options.name, options.profilesDir);
 
   log.info(`Launching claude with profile "${options.name}"`);
   log.step(`CLAUDE_CONFIG_DIR=${targetDir}`);

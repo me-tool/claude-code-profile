@@ -3,10 +3,11 @@ import fs from 'fs-extra';
 import { log } from '../utils/logger';
 import { copyDir } from '../utils/fs';
 import { readConfig, addProfile } from '../core/config';
-import { createProfileMeta, writeProfileMeta, validateProfileName } from '../core/profile';
+import { createProfileMeta, writeProfileMeta, validateProfileName, injectStatusBadge } from '../core/profile';
 import { initGit } from '../core/git';
 import { importItems } from '../core/importer';
-import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
+import { syncProfileToStore, resolveStoreDir } from '../core/store';
+import { PROFILES_DIR, CLAUDE_MD_EXCLUDES } from '../core/paths';
 
 interface CreateOptions {
   name: string;
@@ -54,28 +55,24 @@ export async function runCreate(options: CreateOptions): Promise<void> {
     await copyDir(sourceDir, targetDir);
     await fs.remove(path.join(targetDir, '.git'));
 
+    // Re-migrate plugins to store (copyDir may have dereferenced symlinks)
+    const config = await readConfig(path.join(profiles, '.ccp.json'));
+    await syncProfileToStore(targetDir, resolveStoreDir(config, profiles));
+
     // Ensure cloned profile has isolation settings
     const settingsPath = path.join(targetDir, 'settings.json');
     const clonedSettings = await fs.pathExists(settingsPath)
       ? await fs.readJson(settingsPath)
       : {};
-    clonedSettings.claudeMdExcludes = [
-      path.join(CLAUDE_DIR, 'CLAUDE.md'),
-      path.join(CLAUDE_DIR, 'rules', '**'),
-    ];
-    if (!clonedSettings.statusLine) {
-      clonedSettings.statusLine = { type: 'command', command: 'ccp current --badge' };
-    }
+    clonedSettings.claudeMdExcludes = CLAUDE_MD_EXCLUDES;
+    injectStatusBadge(clonedSettings);
     await fs.writeJson(settingsPath, clonedSettings, { spaces: 2 });
   } else {
     // Empty profile or selective import
     await fs.ensureDir(targetDir);
     await fs.writeFile(path.join(targetDir, 'CLAUDE.md'), '');
     const profileSettings: Record<string, unknown> = {
-      claudeMdExcludes: [
-        path.join(CLAUDE_DIR, 'CLAUDE.md'),
-        path.join(CLAUDE_DIR, 'rules', '**'),
-      ],
+      claudeMdExcludes: CLAUDE_MD_EXCLUDES,
       statusLine: { type: 'command', command: 'ccp current --badge' },
     };
     await fs.writeJson(path.join(targetDir, 'settings.json'), profileSettings, { spaces: 2 });

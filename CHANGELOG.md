@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-03-18
+
+### Added
+
+- **Plugin shared store**: pnpm-style centralized storage for plugins across profiles. Plugins are stored once in `$CCP_STORE` (default `~/.claude-profiles/.store`) and shared via symlinks, eliminating redundant copies.
+- **Environment variables**: `CCP_HOME` and `CCP_STORE` environment variables, automatically injected into shell rc during `ccp init`. `CCP_STORE` is independently configurable for custom store locations.
+- **`ccp gc` command**: Clean up orphaned plugins from the shared store — plugins no longer referenced by any profile.
+- **Lazy migration**: Plugins installed by Claude Code are automatically detected and migrated to the shared store during `activate`, `snapshot`, `pause`, and `resume` operations.
+- **Store health checks in `ccp doctor`**: Detects dangling symlinks, unmigrated plugins, orphaned store entries, and missing environment variables.
+
+### Changed
+
+- **`ccp init`**: Now creates the shared plugin store and migrates existing plugins during initialization.
+- **`ccp create --from` / `ccp copy`**: Cloned profiles share plugins via store symlinks instead of full copies.
+- **`ccp pause` / `ccp uninstall`**: Automatically dereferences plugin symlinks when restoring `~/.claude` as a real directory.
+- **`ccp resume`**: Re-migrates plugins to the shared store after syncing changes from the pause period.
+- **`ccp export`**: Exports self-contained archives with dereferenced plugin files (no broken symlinks).
+- **`ccp import`**: Re-migrates imported plugins to the shared store.
+- **Config version**: `.ccp.json` version bumped to `2` with new `store` field.
+
 ## [0.2.1] - 2026-03-17
 
 ### Added
@@ -51,7 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Atomic symlink switching
 - Concurrent lock with stale PID detection
 
-[Unreleased]: https://github.com/me-tool/claude-code-profile/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/me-tool/claude-code-profile/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/me-tool/claude-code-profile/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/me-tool/claude-code-profile/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/me-tool/claude-code-profile/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/me-tool/claude-code-profile/releases/tag/v0.1.0

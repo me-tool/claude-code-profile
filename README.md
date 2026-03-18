@@ -105,60 +105,93 @@ This tells Claude Code to skip those paths during parent directory traversal. Co
 
 ## Commands
 
-### Lifecycle
+> **If you've used conda**, think of profiles as conda environments — but for Claude Code config instead of Python packages.
+>
+> | conda | ccp | What it does |
+> |-------|-----|-------------|
+> | `conda create -n myenv` | `ccp create myenv` | Create an isolated environment/profile |
+> | `conda activate myenv` | `ccp activate myenv` | Switch into it |
+> | `conda deactivate` | `ccp deactivate` | Switch back to default |
+> | `conda env list` | `ccp list` | See all environments/profiles |
+> | `conda env remove -n myenv` | `ccp delete myenv` | Remove one |
 
-| Command | Description |
-|---------|-------------|
-| `ccp init` | Migrate `~/.claude` to profile management (with backup) |
-| `ccp pause` | Suspend ccp, restore `~/.claude` as real directory |
-| `ccp resume` | Resume ccp management after pause |
-| `ccp uninstall` | Fully exit ccp, restore standard `~/.claude` |
+### Lifecycle — Setup & Teardown
 
-### Profile Management
+<p align="center"><img src="assets/lifecycle-en.svg" alt="Lifecycle flow" width="700"/></p>
 
-| Command | Description |
-|---------|-------------|
-| `ccp create <name>` | Create profile (interactive: select source + items to import). Alias: `add` |
-| `ccp create <name> --from <profile>` | Full clone from existing profile |
-| `ccp delete <name>` | Delete profile (with confirmation). Alias: `remove` |
-| `ccp list` | List all profiles, mark active |
-| `ccp info <name>` | Show profile details and disk usage |
-| `ccp rename <old> <new>` | Rename a profile |
-| `ccp copy <src> <dst>` | Duplicate a profile |
+| Command | What happens | When to use |
+|---------|-------------|-------------|
+| `ccp init` | Copies your `~/.claude` into `~/.claude-profiles/default`, creates a symlink `~/.claude → default`, backs up the original | **First time only.** One command, zero risk — original is backed up |
+| `ccp pause` | Removes the symlink, restores `~/.claude` as a real directory | Temporarily stop using ccp (e.g., debugging) |
+| `ccp resume` | Re-creates the symlink, goes back to profile management | Resume after pause |
+| `ccp uninstall` | Removes all profiles, restores `~/.claude` to pre-ccp state | Completely remove ccp |
 
-### Activation
+### Profile Management — Create, Clone, Organize
 
-| Command | Description |
-|---------|-------------|
-| `ccp activate <name>` | Switch active profile (changes symlink) |
-| `ccp deactivate` | Return to default profile |
-| `ccp launch <name>` | Start Claude with this profile without switching (via `CLAUDE_CONFIG_DIR`). Alias: `run` |
-| `ccp current` | Show current active profile |
-| `ccp current --badge` | Output `[name]` for status bar integration |
+<p align="center"><img src="assets/profile-mgmt-en.svg" alt="Profile management flow" width="700"/></p>
 
-### Import / Export
+| Command | What happens | Example |
+|---------|-------------|---------|
+| `ccp create <name>` | Interactive wizard — pick a source profile and which items to import (auth, plugins, skills, etc.). Alias: `add` | `ccp create reviewer` — prompts you to choose what to include |
+| `ccp create <name> --from <profile>` | Full clone — copies everything from an existing profile | `ccp create work --from default` — exact copy of default |
+| `ccp delete <name>` | Deletes a profile (with confirmation). Refuses to delete the active or default profile. Alias: `remove` | `ccp delete old-project` |
+| `ccp list` | Lists all profiles, marks the active one with `*` | Shows: `default *`, `coder` |
+| `ccp info <name>` | Shows profile details: description, creation date, disk usage, git status | `ccp info reviewer` |
+| `ccp rename <old> <new>` | Renames a profile directory and updates all references | `ccp rename reviewer strict-reviewer` |
+| `ccp copy <src> <dst>` | Duplicates a profile (like `create --from` but for existing profiles) | `ccp copy work work-backup` |
 
-| Command | Description |
-|---------|-------------|
-| `ccp import <target> --from <source>` | Selective import between profiles |
-| `ccp export <name> -o <path>` | Export profile as `.ccp.tar.gz` |
-| `ccp import-archive <path>` | Import profile from archive |
+### Activation — Switch & Launch
 
-### Version Control
+<p align="center"><img src="assets/activation-en.svg" alt="Activation flow" width="700"/></p>
 
-| Command | Description |
-|---------|-------------|
-| `ccp snapshot <name> [-m "msg"]` | Manual snapshot (git commit) |
-| `ccp history <name>` | View profile change history |
-| `ccp rollback <name>` | Rollback to a previous snapshot |
+| Command | What happens | Example |
+|---------|-------------|---------|
+| `ccp activate <name>` | **Switches** the active profile — `~/.claude` symlink now points to `<name>`. Auto-snapshots before switching. | `ccp activate reviewer` — all Claude sessions now use reviewer config |
+| `ccp deactivate` | Switches back to `default` profile | `ccp deactivate` — equivalent to `ccp activate default` |
+| `ccp launch <name>` | **Starts a new Claude instance** with the given profile, **without switching** the active one. Uses `CLAUDE_CONFIG_DIR` env var. Alias: `run` | `ccp launch work` — opens Claude with work profile while you stay on default |
+| `ccp current` | Prints the name of the active profile | Output: `default` |
+| `ccp current --badge` | Prints `[name]` format for status bar integration | Output: `[reviewer]` |
+
+> **activate vs launch**: `activate` is like `conda activate` — it changes your global state. `launch` is like running `conda run -n myenv python script.py` — it uses a profile for one session without changing anything globally.
+
+### Import / Export — Share & Migrate
+
+| Command | What happens | Example |
+|---------|-------------|---------|
+| `ccp import <target> --from <source>` | Selectively import items (auth, plugins, skills, hooks, mcp, rules, settings, memory) from one profile to another. **Field-level merge** — importing plugins won't overwrite your model settings. | `ccp import work --from reviewer --items skills hooks` |
+| `ccp export <name> -o <path>` | Exports a profile as a `.ccp.tar.gz` archive. Auth excluded by default. | `ccp export reviewer -o ~/reviewer-backup.ccp.tar.gz` |
+| `ccp import-archive <path>` | Imports a profile from a `.ccp.tar.gz` archive | `ccp import-archive ~/reviewer-backup.ccp.tar.gz` |
+
+### Version Control — Snapshot & Rollback
+
+<p align="center"><img src="assets/version-ctrl-en.svg" alt="Version control flow" width="700"/></p>
+
+| Command | What happens | Example |
+|---------|-------------|---------|
+| `ccp snapshot <name> [-m "msg"]` | Manually saves the current state as a git commit | `ccp snapshot reviewer -m "tuned prompts"` |
+| `ccp history <name>` | Shows the snapshot timeline (git log) | `ccp history reviewer` — see all past snapshots |
+| `ccp rollback <name>` | Interactive rollback — pick a snapshot to restore. **Non-destructive**: creates a new commit, never loses history | `ccp rollback reviewer` — pick from list of snapshots |
+
+> Profiles also auto-snapshot on every `activate` / `deactivate`, so you always have a restore point.
 
 ### Health
 
-| Command | Description |
+| Command | What happens |
 |---------|-------------|
-| `ccp doctor` | Check symlink integrity, profile validity, auto-repair |
+| `ccp doctor` | Checks symlink integrity, profile directory validity, config consistency, and auto-repairs common issues |
 
-All commands support `-y, --yes` to skip confirmation prompts.
+### Shell Completion
+
+```bash
+# Enable tab completion (added automatically during `ccp init`)
+eval "$(ccp completion zsh)"    # zsh
+eval "$(ccp completion bash)"   # bash
+ccp completion fish | source    # fish
+```
+
+After setup, type `ccp re<Tab>` to see `rename`, `resume`, `remove`, `rollback`.
+
+> All commands support `-y, --yes` to skip confirmation prompts.
 
 ## Importable Items
 
@@ -193,10 +226,45 @@ Every profile is a git repository. Configuration changes are tracked automatical
 | `init` failure | Copy-then-verify-then-symlink; original backed up; rollback on any step failure |
 | Concurrent operations | Atomic lock file with stale PID detection |
 | Symlink switch | Atomic: temp symlink + rename (POSIX atomic) |
-| `activate` while Claude running | Detects claude process, warns user (`--force` to override) |
+| `activate` / `pause` / `uninstall` while Claude running | Detects claude process, warns user (`--force` to override) |
 | `delete` active / default | Refused |
 | `export` | Auth excluded by default (`--include-auth` to override) |
 | `pause` / `uninstall` | Restores real `~/.claude`; status bar restored to original |
+
+## Plugin Shared Store
+
+ccp uses a **pnpm-style shared store** for plugins. Instead of copying plugin files into every profile, plugins are stored once in a central location and shared via symlinks.
+
+```
+~/.claude-profiles/.store/          ← Shared store (single copy of each plugin)
+    cache/official/superpowers/     ← Plugin entity
+    marketplaces/                   ← Marketplace metadata
+
+~/.claude-profiles/default/plugins/
+    cache/official/
+        superpowers → ../.store/cache/official/superpowers  (symlink)
+    installed_plugins.json          ← Per-profile (controls which plugins are enabled)
+```
+
+**How it works:**
+- `ccp init` migrates existing plugins to the shared store
+- Each profile's `plugins/cache/` contains symlinks, not copies
+- Claude Code's install/update/disable operations work transparently through symlinks
+- New plugins installed by Claude are automatically migrated to the store on `activate` / `snapshot`
+- `ccp pause` / `ccp export` dereference symlinks back to real directories
+
+**Environment variables** (set automatically during `ccp init`):
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `CCP_HOME` | `~/.claude-profiles` | Profiles root directory |
+| `CCP_STORE` | `$CCP_HOME/.store` | Shared store location (independently configurable) |
+
+### Maintenance
+
+| Command | What happens |
+|---------|-------------|
+| `ccp gc` | Finds and removes orphaned plugins from the store (plugins no longer referenced by any profile) |
 
 ## Status Bar
 
@@ -307,38 +375,122 @@ Claude Code 从三个作用域加载配置：
 
 ### 安全机制
 - `init` 失败时自动回滚，原始目录备份保留
+- `activate` / `pause` / `uninstall` 检测 Claude 进程运行状态（`--force` 跳过）
 - 原子锁文件 + 过期 PID 检测
 - Symlink 原子切换（temp + rename）
 - `export` 默认排除认证信息
 - `delete` 拒绝删除激活或默认 Profile
 
-## 命令速查
+### 插件共享存储
 
+ccp 采用类似 **pnpm 的共享存储**机制管理插件。插件实体集中存放在共享位置，各 Profile 通过 symlink 引用，避免重复复制。
+
+- `ccp init` 时自动将现有插件迁移到共享存储
+- 每个 Profile 的 `plugins/cache/` 下是 symlink，不是副本
+- Claude Code 的安装/更新/禁用操作通过 symlink 透明生效
+- 新安装的插件在 `activate` / `snapshot` 时自动迁移到共享存储
+- `ccp pause` / `ccp export` 时自动还原为真实目录
+
+**环境变量**（`ccp init` 时自动设置）：
+
+| 变量 | 默认值 | 用途 |
+|------|--------|------|
+| `CCP_HOME` | `~/.claude-profiles` | Profile 根目录 |
+| `CCP_STORE` | `$CCP_HOME/.store` | 共享存储位置（可独立配置） |
+
+| 命令 | 做了什么 |
+|------|---------|
+| `ccp gc` | 查找并删除共享存储中的孤儿插件（不再被任何 Profile 引用的插件） |
+
+## 命令详解
+
+> **用过 conda？** 把 Profile 想象成 conda 环境 —— 只不过管理的是 Claude Code 配置，而不是 Python 包。
+>
+> | conda | ccp | 做什么 |
+> |-------|-----|--------|
+> | `conda create -n myenv` | `ccp create myenv` | 创建隔离环境/Profile |
+> | `conda activate myenv` | `ccp activate myenv` | 切换进去 |
+> | `conda deactivate` | `ccp deactivate` | 回到默认 |
+> | `conda env list` | `ccp list` | 查看所有环境/Profile |
+> | `conda env remove -n myenv` | `ccp delete myenv` | 删除 |
+
+### 生命周期 — 安装与卸载
+
+<p align="center"><img src="assets/lifecycle-zh.svg" alt="生命周期流程" width="700"/></p>
+
+| 命令 | 做了什么 | 什么时候用 |
+|------|---------|-----------|
+| `ccp init` | 把 `~/.claude` 复制到 `~/.claude-profiles/default`，创建 symlink，备份原始目录 | **首次使用**，一条命令，零风险（原始目录已备份） |
+| `ccp pause` | 临时移除 symlink，恢复 `~/.claude` 为真实目录 | 临时停用 ccp（比如排查问题） |
+| `ccp resume` | 重新创建 symlink，恢复 Profile 管理 | pause 之后恢复 |
+| `ccp uninstall` | 移除所有 Profile，恢复 `~/.claude` 到 ccp 之前的状态 | 完全卸载 ccp |
+
+### Profile 管理 — 创建、克隆、整理
+
+<p align="center"><img src="assets/profile-mgmt-zh.svg" alt="Profile 管理流程" width="700"/></p>
+
+| 命令 | 做了什么 | 示例 |
+|------|---------|------|
+| `ccp create <name>` | 交互式向导 —— 选择源 Profile 和要导入的项目（认证、插件、skills 等）。别名：`add` | `ccp create reviewer` 会提示你选择要包含哪些内容 |
+| `ccp create <name> --from <profile>` | 完整克隆 —— 从现有 Profile 复制所有内容 | `ccp create work --from default` 得到 default 的完整副本 |
+| `ccp delete <name>` | 删除 Profile（需确认）。拒绝删除激活中或 default Profile。别名：`remove` | `ccp delete old-project` |
+| `ccp list` | 列出所有 Profile，用 `*` 标记激活中的 | 显示：`default *`、`coder` |
+| `ccp info <name>` | 显示 Profile 详情：描述、创建时间、磁盘占用、git 状态 | `ccp info reviewer` |
+| `ccp rename <old> <new>` | 重命名 Profile 目录并更新所有引用 | `ccp rename reviewer strict-reviewer` |
+| `ccp copy <src> <dst>` | 复制 Profile（类似 `create --from`，用于已有 Profile） | `ccp copy work work-backup` |
+
+### 激活 — 切换与并行启动
+
+<p align="center"><img src="assets/activation-zh.svg" alt="激活流程" width="700"/></p>
+
+| 命令 | 做了什么 | 示例 |
+|------|---------|------|
+| `ccp activate <name>` | **切换**激活 Profile —— `~/.claude` symlink 指向 `<name>`。切换前自动快照。 | `ccp activate reviewer` 之后所有 Claude 会话使用 reviewer 配置 |
+| `ccp deactivate` | 切回 `default` Profile | `ccp deactivate` 等同于 `ccp activate default` |
+| `ccp launch <name>` | **启动新 Claude 实例**使用指定 Profile，**不切换**当前激活的 Profile。通过 `CLAUDE_CONFIG_DIR` 环境变量实现。别名：`run` | `ccp launch work` 打开使用 work 配置的 Claude，当前仍在 default |
+| `ccp current` | 打印当前激活的 Profile 名称 | 输出：`default` |
+| `ccp current --badge` | 打印 `[name]` 格式，用于状态栏集成 | 输出：`[reviewer]` |
+
+> **activate vs launch**：`activate` 像 `conda activate` —— 改变全局状态，所有新会话都受影响。`launch` 像 `conda run -n myenv python script.py` —— 只为这一次会话使用特定 Profile，全局不变。
+
+### 导入 / 导出 — 分享与迁移
+
+| 命令 | 做了什么 | 示例 |
+|------|---------|------|
+| `ccp import <target> --from <source>` | 从一个 Profile 选择性导入项目到另一个。**字段级合并** —— 导入插件不会覆盖你的模型设置。 | `ccp import work --from reviewer --items skills hooks` |
+| `ccp export <name> -o <path>` | 导出 Profile 为 `.ccp.tar.gz` 归档。默认排除认证信息。 | `ccp export reviewer -o ~/reviewer.ccp.tar.gz` |
+| `ccp import-archive <path>` | 从归档文件导入 Profile | `ccp import-archive ~/reviewer.ccp.tar.gz` |
+
+### 版本控制 — 快照与回滚
+
+<p align="center"><img src="assets/version-ctrl-zh.svg" alt="版本控制流程" width="700"/></p>
+
+| 命令 | 做了什么 | 示例 |
+|------|---------|------|
+| `ccp snapshot <name> [-m "msg"]` | 手动保存当前状态为 git commit | `ccp snapshot reviewer -m "调优提示词"` |
+| `ccp history <name>` | 查看快照时间线（git log） | `ccp history reviewer` 查看所有历史快照 |
+| `ccp rollback <name>` | 交互式回滚 —— 选择一个快照来恢复。**非破坏性**：创建新提交，不丢失任何历史 | `ccp rollback reviewer` 从列表中选择 |
+
+> 每次 `activate` / `deactivate` 都会自动快照，所以你永远有恢复点。
+
+### 健康检查
+
+| 命令 | 做了什么 |
+|------|---------|
+| `ccp doctor` | 检查 symlink 完整性、Profile 目录有效性、配置一致性，自动修复常见问题 |
+
+### Shell 补全
+
+```bash
+# 启用 Tab 补全（ccp init 时自动添加到 shell 配置）
+eval "$(ccp completion zsh)"    # zsh
+eval "$(ccp completion bash)"   # bash
+ccp completion fish | source    # fish
 ```
-ccp init                          初始化，迁移 ~/.claude
-ccp pause / resume / uninstall    暂停 / 恢复 / 卸载
 
-ccp create|add <name>             创建 Profile（交互式）
-ccp create <name> --from <src>    从现有 Profile 克隆
-ccp delete|remove / list / info   删除 / 列表 / 详情
-ccp rename <old> <new>            重命名
-ccp copy <src> <dst>              复制
+设置后输入 `ccp re<Tab>` 即可看到 `rename`、`resume`、`remove`、`rollback`。
 
-ccp activate <name>               切换 Profile
-ccp deactivate                    回到 default
-ccp launch|run <name>             并行启动
-ccp current [--badge]             当前 Profile
-
-ccp import <target> --from <src>  选择性导入
-ccp export <name> -o <path>       导出归档
-ccp import-archive <path>         导入归档
-
-ccp snapshot <name> [-m "msg"]    手动快照
-ccp history <name>                变更历史
-ccp rollback <name>               回滚
-
-ccp doctor                        健康检查
-```
+> 所有命令支持 `-y, --yes` 跳过确认提示。
 
 ## 许可证
 

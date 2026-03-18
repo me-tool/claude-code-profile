@@ -1,22 +1,12 @@
 import path from 'node:path';
-import fs from 'fs-extra';
-import { execFileSync } from 'node:child_process';
 import { log } from '../utils/logger';
 import { readConfig, setActive } from '../core/config';
-import { validateProfileName } from '../core/profile';
-import { switchSymlink } from '../core/symlink';
+import { resolveProfileDir } from '../core/profile';
+import { switchSymlink, isClaudeRunning } from '../core/symlink';
 import { autoCommit } from '../core/git';
 import { acquireLock } from '../core/lock';
 import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
-
-function isClaudeRunning(): boolean {
-  try {
-    execFileSync('pgrep', ['-x', 'claude'], { stdio: 'ignore' });
-    return true;
-  } catch {
-    return false;
-  }
-}
+import { syncProfileToStore, resolveStoreDir } from '../core/store';
 
 interface ActivateOptions {
   name: string;
@@ -31,11 +21,7 @@ export async function runActivate(options: ActivateOptions): Promise<void> {
   const profiles = options.profilesDir ?? PROFILES_DIR;
   const configFile = path.join(profiles, '.ccp.json');
   const lockFile = path.join(profiles, '.ccp.lock');
-  const targetDir = path.join(profiles, options.name);
-
-  const nameCheck = validateProfileName(options.name);
-  if (!nameCheck.valid) throw new Error(`Invalid profile name: ${nameCheck.reason}`);
-  if (!(await fs.pathExists(targetDir))) throw new Error(`Profile "${options.name}" not found`);
+  const targetDir = await resolveProfileDir(options.name, profiles);
 
   if (isClaudeRunning() && !options.force) {
     log.warn('Claude Code appears to be running.');
@@ -52,6 +38,7 @@ export async function runActivate(options: ActivateOptions): Promise<void> {
   try {
     const currentDir = path.join(profiles, config.active);
     log.step(`Snapshotting "${config.active}"...`);
+    await syncProfileToStore(currentDir, resolveStoreDir(config, profiles));
     await autoCommit(currentDir, 'auto: snapshot before deactivate');
     log.step(`Switching to "${options.name}"...`);
     await switchSymlink(targetDir, claude);

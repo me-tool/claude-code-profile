@@ -1,8 +1,9 @@
 import path from 'node:path';
-import fs from 'fs-extra';
 import { log } from '../utils/logger';
-import { snapshot } from '../core/git';
-import { validateProfileName } from '../core/profile';
+import { autoCommit } from '../core/git';
+import { readConfig } from '../core/config';
+import { resolveProfileDir } from '../core/profile';
+import { syncProfileToStore, resolveStoreDir } from '../core/store';
 import { PROFILES_DIR } from '../core/paths';
 
 interface SnapshotOptions {
@@ -13,13 +14,14 @@ interface SnapshotOptions {
 
 export async function runSnapshot(options: SnapshotOptions): Promise<void> {
   const profiles = options.profilesDir ?? PROFILES_DIR;
-  const dir = path.join(profiles, options.name);
-  const nameCheck = validateProfileName(options.name);
-  if (!nameCheck.valid) throw new Error(`Invalid profile name: ${nameCheck.reason}`);
-  if (!(await fs.pathExists(dir))) throw new Error(`Profile "${options.name}" not found`);
+  const configFile = path.join(profiles, '.ccp.json');
+  const dir = await resolveProfileDir(options.name, options.profilesDir);
+
+  const config = await readConfig(configFile);
+  await syncProfileToStore(dir, resolveStoreDir(config, profiles));
 
   const msg = options.message ?? `manual snapshot ${new Date().toISOString()}`;
-  const committed = await snapshot(dir, msg);
+  const committed = await autoCommit(dir, msg, 'snapshot');
   if (committed) log.success(`Snapshot created for "${options.name}"`);
   else log.info(`No changes to snapshot for "${options.name}"`);
 }

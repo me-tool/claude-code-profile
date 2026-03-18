@@ -1,5 +1,15 @@
 import fs from 'fs-extra';
+import { execFileSync } from 'node:child_process';
 import { getErrorCode } from '../utils/logger';
+
+export function isClaudeRunning(): boolean {
+  try {
+    execFileSync('pgrep', ['-x', 'claude'], { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export async function createSymlink(target: string, linkPath: string): Promise<void> {
   await fs.symlink(target, linkPath, 'dir');

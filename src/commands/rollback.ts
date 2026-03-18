@@ -1,10 +1,7 @@
-import path from 'node:path';
-import fs from 'fs-extra';
 import { log } from '../utils/logger';
 import { getHistory, rollbackTo } from '../core/git';
-import { validateProfileName } from '../core/profile';
+import { resolveProfileDir } from '../core/profile';
 import { select } from '@inquirer/prompts';
-import { PROFILES_DIR } from '../core/paths';
 
 interface RollbackOptions {
   name: string;
@@ -14,11 +11,7 @@ interface RollbackOptions {
 }
 
 export async function runRollback(options: RollbackOptions): Promise<void> {
-  const profiles = options.profilesDir ?? PROFILES_DIR;
-  const dir = path.join(profiles, options.name);
-  const nameCheck = validateProfileName(options.name);
-  if (!nameCheck.valid) throw new Error(`Invalid profile name: ${nameCheck.reason}`);
-  if (!(await fs.pathExists(dir))) throw new Error(`Profile "${options.name}" not found`);
+  const dir = await resolveProfileDir(options.name, options.profilesDir);
 
   let targetHash = options.commit;
   if (!targetHash && !options.skipPrompts) {

@@ -1,9 +1,11 @@
 import path from 'node:path';
 import fs from 'fs-extra';
 import { log } from '../utils/logger';
+import { readConfig } from '../core/config';
 import { importItems } from '../core/importer';
 import { validateProfileName } from '../core/profile';
 import { autoCommit } from '../core/git';
+import { syncProfileToStore, resolveStoreDir } from '../core/store';
 import { PROFILES_DIR } from '../core/paths';
 
 interface ImportOptions {
@@ -36,6 +38,12 @@ export async function runImport(options: ImportOptions): Promise<void> {
   log.step(`Items: ${options.items.join(', ')}`);
 
   await importItems(sourceDir, targetDir, options.items);
+
+  if (options.items.includes('plugins')) {
+    const config = await readConfig(path.join(profiles, '.ccp.json'));
+    await syncProfileToStore(targetDir, resolveStoreDir(config, profiles));
+  }
+
   await autoCommit(targetDir, `import ${options.items.join(', ')} from "${options.from}"`);
 
   log.success('Import complete');

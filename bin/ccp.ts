@@ -21,16 +21,16 @@ import { runSnapshot } from '../src/commands/snapshot';
 import { runHistory } from '../src/commands/history';
 import { runRollback } from '../src/commands/rollback';
 import { runDoctor } from '../src/commands/doctor';
+import { runGc } from '../src/commands/gc';
 import { getErrorMessage } from '../src/utils/logger';
+import pkg from '../package.json';
 
 const program = new Command();
 
 program
   .name('ccp')
   .description('Claude Code Profile -- Chrome-like profile management for Claude Code')
-  .version('0.2.0')
-  .option('-v', 'Output version number')
-  .on('option:v', () => { console.log('0.2.0'); process.exit(0); });
+  .version(pkg.version, '-v, --version');
 
 // --- Lifecycle ---
 
@@ -51,9 +51,10 @@ program
   .command('pause')
   .description('Suspend ccp, restore ~/.claude as real directory')
   .option('-y, --yes', 'Skip confirmation')
+  .option('-f, --force', 'Force even if Claude is running')
   .action(async (opts) => {
     try {
-      await runPause({ skipConfirm: opts.yes });
+      await runPause({ skipConfirm: opts.yes, force: opts.force });
     } catch (err: unknown) {
       console.error(getErrorMessage(err));
       process.exit(1);
@@ -77,9 +78,10 @@ program
   .command('uninstall')
   .description('Uninstall ccp, restore ~/.claude as real directory')
   .option('-y, --yes', 'Skip confirmation')
+  .option('-f, --force', 'Force even if Claude is running')
   .action(async (opts) => {
     try {
-      await runUninstall({ skipConfirm: opts.yes });
+      await runUninstall({ skipConfirm: opts.yes, force: opts.force });
     } catch (err: unknown) {
       console.error(getErrorMessage(err));
       process.exit(1);
@@ -334,6 +336,64 @@ program
       await runDoctor();
     } catch (err: unknown) {
       console.error(getErrorMessage(err));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('gc')
+  .description('Clean up orphaned plugins from shared store')
+  .option('-y, --yes', 'Skip confirmation')
+  .action(async (opts) => {
+    try {
+      await runGc({ skipConfirm: opts.yes });
+    } catch (err: unknown) {
+      console.error(getErrorMessage(err));
+      process.exit(1);
+    }
+  });
+
+// --- Completion ---
+
+program
+  .command('completion')
+  .description('Output shell completion script')
+  .argument('[shell]', 'Shell type (bash, zsh, fish)', 'zsh')
+  .action((shell: string) => {
+    const commands = program.commands.map(c => c.name()).filter(n => n !== 'completion');
+    const aliases = program.commands.flatMap(c => c.aliases());
+
+    if (shell === 'zsh') {
+      console.log(`#compdef ccp
+# Add to ~/.zshrc: eval "$(ccp completion zsh)"
+_ccp() {
+  local -a commands
+  commands=(
+${commands.map(c => `    '${c}:${program.commands.find(cmd => cmd.name() === c)?.description() || ''}'`).join('\n')}
+  )
+  _describe 'ccp commands' commands
+}
+compdef _ccp ccp`);
+    } else if (shell === 'bash') {
+      console.log(`# Add to ~/.bashrc: eval "$(ccp completion bash)"
+_ccp_completions() {
+  local cur="\${COMP_WORDS[COMP_CWORD]}"
+  local commands="${[...commands, ...aliases].join(' ')}"
+  COMPREPLY=( $(compgen -W "$commands" -- "$cur") )
+}
+complete -F _ccp_completions ccp`);
+    } else if (shell === 'fish') {
+      console.log(`# Add to ~/.config/fish/completions/ccp.fish: ccp completion fish | source`);
+      for (const cmd of program.commands) {
+        if (cmd.name() === 'completion') continue;
+        const desc = cmd.description() || '';
+        console.log(`complete -c ccp -f -n '__fish_use_subcommand' -a '${cmd.name()}' -d '${desc}'`);
+        for (const alias of cmd.aliases()) {
+          console.log(`complete -c ccp -f -n '__fish_use_subcommand' -a '${alias}' -d '${desc}'`);
+        }
+      }
+    } else {
+      console.error(`Unsupported shell: ${shell}. Use bash, zsh, or fish.`);
       process.exit(1);
     }
   });

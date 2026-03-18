@@ -48,6 +48,29 @@ describe('init command', () => {
     expect(backups.length).toBe(1);
   });
 
+  it('should create plugin store and migrate plugins', async () => {
+    // Add plugins to mock claude dir before init
+    const pluginDir = path.join(claudeDir, 'plugins', 'cache', 'official', 'test-plugin');
+    await fs.ensureDir(path.join(pluginDir, '1.0'));
+    await fs.writeFile(path.join(pluginDir, '1.0', 'plugin.json'), '{}');
+
+    await runInit({ claudeDir, profilesDir, skipConfirm: true });
+
+    const storeDir = path.join(profilesDir, '.store');
+    // Store should exist with plugin
+    expect(await fs.pathExists(path.join(storeDir, 'cache', 'official', 'test-plugin', '1.0', 'plugin.json'))).toBe(true);
+
+    // Profile plugin should be symlink to store
+    const profilePlugin = path.join(profilesDir, 'default', 'plugins', 'cache', 'official', 'test-plugin');
+    expect((await fs.lstat(profilePlugin)).isSymbolicLink()).toBe(true);
+    expect(await fs.readlink(profilePlugin)).toBe(path.join(storeDir, 'cache', 'official', 'test-plugin'));
+
+    // Config should have store field
+    const config = await fs.readJson(path.join(profilesDir, '.ccp.json'));
+    expect(config.store).toBe(storeDir);
+    expect(config.version).toBe(2);
+  });
+
   it('should refuse if already initialized', async () => {
     await runInit({ claudeDir, profilesDir, skipConfirm: true });
     await expect(runInit({ claudeDir, profilesDir, skipConfirm: true })).rejects.toThrow(/already initialized/i);

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 140" fill="none">
+  <defs>
+    <linearGradient id="vc-bg" x1="0" y1="0" x2="720" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f0f1a"/>
+      <stop offset="100%" stop-color="#1a1a2e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="720" height="140" rx="12" fill="url(#vc-bg)"/>
+  <rect x="1" y="1" width="718" height="138" rx="11" stroke="#313244" stroke-width="1" fill="none"/>
+
+  <!-- Title -->
+  <text x="360" y="28" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#cdd6f4">&#29256;&#26412;&#25511;&#21046; &#8212; &#38750;&#30772;&#22351;&#24615;&#22238;&#28378;</text>
+
+  <!-- Timeline line -->
+  <line x1="60" y1="70" x2="660" y2="70" stroke="#444466" stroke-width="2"/>
+
+  <!-- Node 1: working state -->
+  <circle cx="80" cy="70" r="8" fill="#2a2a4a" stroke="#6c7086" stroke-width="1.5"/>
+  <text x="80" y="58" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">&#24403;&#21069;&#29366;&#24577;</text>
+
+  <!-- Arrow label: snapshot -->
+  <text x="175" y="58" text-anchor="middle" font-family="SF Mono, monospace" font-size="8" font-weight="600" fill="#a6e3a1">ccp snapshot -m "&#28155;&#21152;&#35268;&#21017;"</text>
+
+  <!-- Node 2: commit #1 -->
+  <circle cx="270" cy="70" r="8" fill="#a6e3a1" stroke="#a6e3a1" stroke-width="1.5"/>
+  <text x="270" y="92" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#a6e3a1">&#25552;&#20132; #1</text>
+
+  <!-- Arrow label: keep working -->
+  <text x="370" y="58" text-anchor="middle" font-family="SF Mono, monospace" font-size="8" fill="#6c7086">&#32487;&#32493;&#24037;&#20316;...</text>
+
+  <!-- Node 3: commit #2 -->
+  <circle cx="470" cy="70" r="8" fill="#89b4fa" stroke="#89b4fa" stroke-width="1.5"/>
+  <text x="470" y="92" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#89b4fa">&#25552;&#20132; #2</text>
+
+  <!-- Arrow label: rollback -->
+  <text x="565" y="58" text-anchor="middle" font-family="SF Mono, monospace" font-size="8" font-weight="600" fill="#f9e2af">ccp rollback</text>
+
+  <!-- Node 4: new commit (reverted) -->
+  <circle cx="660" cy="70" r="8" fill="#f9e2af" stroke="#f9e2af" stroke-width="1.5"/>
+  <text x="660" y="92" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#f9e2af">&#25552;&#20132; #3</text>
+
+  <!-- Rollback arc -->
+  <path d="M 660 62 Q 660 35 465 35 Q 270 35 270 55" stroke="#f9e2af" stroke-width="1" fill="none" stroke-dasharray="4,3"/>
+  <polygon points="266,57 270,47 274,57" fill="#f9e2af"/>
+
+  <!-- Note -->
+  <text x="360" y="122" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" fill="#6c7086">&#22238;&#28378;&#21019;&#24314;&#26032;&#25552;&#20132;&#24674;&#22797;&#21040; #1 &#8212; &#21382;&#21490;&#27704;&#19981;&#20002;&#22833;</text>
+</svg>

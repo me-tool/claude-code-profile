@@ -2,7 +2,7 @@ import path from 'node:path';
 import fs from 'fs-extra';
 import { log } from '../utils/logger';
 import { readConfig } from '../core/config';
-import { readProfileMeta, validateProfileName } from '../core/profile';
+import { readProfileMeta, resolveProfileDir } from '../core/profile';
 import { getDirSize } from '../utils/fs';
 import { PROFILES_DIR } from '../core/paths';
 
@@ -19,12 +19,8 @@ function formatSize(bytes: number): string {
 
 export async function runInfo(options: InfoOptions): Promise<void> {
   const profiles = options.profilesDir ?? PROFILES_DIR;
-  const profileDir = path.join(profiles, options.name);
+  const profileDir = await resolveProfileDir(options.name, profiles);
   const configFile = path.join(profiles, '.ccp.json');
-
-  const nameCheck = validateProfileName(options.name);
-  if (!nameCheck.valid) throw new Error(`Invalid profile name: ${nameCheck.reason}`);
-  if (!(await fs.pathExists(profileDir))) throw new Error(`Profile "${options.name}" not found`);
 
   const config = await readConfig(configFile);
   const metaPath = path.join(profileDir, '.profile.json');
