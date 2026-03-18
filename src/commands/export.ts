@@ -66,7 +66,9 @@ export async function runExport(options: ExportOptions): Promise<void> {
       [options.name],
     );
   } finally {
-    await fs.remove(tmpExportDir).catch(() => {});
+    await fs.remove(tmpExportDir).catch((err: any) => {
+      log.warn(`Failed to clean temp dir ${tmpExportDir}: ${err.message}`);
+    });
   }
 
   log.success(`Profile exported to ${outputPath}`);

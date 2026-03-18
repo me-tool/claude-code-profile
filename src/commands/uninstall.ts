@@ -46,7 +46,10 @@ export async function runUninstall(options: UninstallOptions = {}): Promise<void
   log.step('Restoring ~/.claude...');
   await removeSymlink(claude);
   await copyDir(activeDir, claude);
-  await dereferencePlugins(claude);
+  const dangling = await dereferencePlugins(claude);
+  if (dangling.length > 0) {
+    log.warn(`${dangling.length} plugin(s) could not be restored (store data missing)`);
+  }
 
   await restoreStatusLine(activeDir, claude);
 
@@ -72,7 +75,18 @@ async function cleanShellEnvVars(): Promise<void> {
 
   if (!rcFile || !await fs.pathExists(rcFile)) return;
 
-  let content = await fs.readFile(rcFile, 'utf-8');
-  content = content.replace(/\n# ccp shell completion\neval "[^"]*"\nexport CCP_HOME="[^"]*"\nexport CCP_STORE="[^"]*"\n/g, '');
-  await fs.writeFile(rcFile, content);
+  try {
+    const original = await fs.readFile(rcFile, 'utf-8');
+    let content = original;
+    // Match marker-based blocks (new format with end marker)
+    content = content.replace(/\n# ccp shell completion\n[\s\S]*?# end ccp\n/g, '');
+    // Match legacy format (without end marker)
+    content = content.replace(/\n# ccp shell completion\neval "[^"]*"\nexport CCP_HOME="[^"]*"\nexport CCP_STORE="[^"]*"\n/g, '');
+    if (content !== original) {
+      await fs.writeFile(rcFile, content);
+      log.info(`Cleaned CCP env vars from ${rcFile}`);
+    }
+  } catch (err: any) {
+    log.warn(`Could not clean shell env vars: ${err.message}. Manually remove CCP_HOME/CCP_STORE exports from your shell rc file.`);
+  }
 }

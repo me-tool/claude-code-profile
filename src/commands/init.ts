@@ -8,7 +8,7 @@ import { createProfileMeta, writeProfileMeta, injectStatusBadge } from '../core/
 import { createSymlink, isSymlink } from '../core/symlink';
 import { initGit } from '../core/git';
 import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
-import { syncProfileToStore } from '../core/store';
+import { syncProfileToStore, resolveStoreDir } from '../core/store';
 
 interface InitOptions {
   claudeDir?: string;
@@ -66,9 +66,8 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
   }
 
   // Migrate plugins to shared store
-  const storeDir = process.env.CCP_STORE || path.join(profiles, '.store');
+  const storeDir = resolveStoreDir(undefined, profiles);
   log.step('Setting up shared plugin store...');
-  await fs.ensureDir(path.join(storeDir, 'cache'));
   await syncProfileToStore(defaultProfile, storeDir);
 
   log.step('Initializing version control...');
@@ -103,7 +102,7 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
   }
 
   // Shell completion setup
-  const rcFile = await setupShellCompletion();
+  const rcFile = await setupShellCompletion(profiles, storeDir);
 
   log.success('ccp initialized. Active profile: default');
   log.info(`Original ~/.claude backed up to ${backup}`);
@@ -114,8 +113,9 @@ export async function runInit(options: InitOptions = {}): Promise<void> {
 }
 
 const COMPLETION_MARKER = '# ccp shell completion';
+const COMPLETION_END_MARKER = '# end ccp';
 
-async function setupShellCompletion(): Promise<string | null> {
+async function setupShellCompletion(profilesDir: string, storeDir: string): Promise<string | null> {
   const shell = process.env.SHELL || '';
   const home = os.homedir();
 
@@ -147,7 +147,7 @@ async function setupShellCompletion(): Promise<string | null> {
     return null; // already installed
   }
 
-  const snippet = `\n${COMPLETION_MARKER}\neval "$(ccp completion ${shellType})"\nexport CCP_HOME="${path.join(home, '.claude-profiles')}"\nexport CCP_STORE="${path.join(home, '.claude-profiles', '.store')}"\n`;
+  const snippet = `\n${COMPLETION_MARKER}\neval "$(ccp completion ${shellType})"\nexport CCP_HOME="${profilesDir}"\nexport CCP_STORE="${storeDir}"\n${COMPLETION_END_MARKER}\n`;
   await fs.appendFile(rcFile, snippet);
   return rcFile;
 }

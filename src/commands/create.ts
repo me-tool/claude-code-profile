@@ -6,7 +6,7 @@ import { readConfig, addProfile } from '../core/config';
 import { createProfileMeta, writeProfileMeta, validateProfileName, injectStatusBadge } from '../core/profile';
 import { initGit } from '../core/git';
 import { importItems } from '../core/importer';
-import { syncProfileToStore } from '../core/store';
+import { syncProfileToStore, resolveStoreDir } from '../core/store';
 import { PROFILES_DIR, CLAUDE_MD_EXCLUDES } from '../core/paths';
 
 interface CreateOptions {
@@ -57,7 +57,7 @@ export async function runCreate(options: CreateOptions): Promise<void> {
 
     // Re-migrate plugins to store (copyDir may have dereferenced symlinks)
     const config = await readConfig(path.join(profiles, '.ccp.json'));
-    await syncProfileToStore(targetDir, config.store);
+    await syncProfileToStore(targetDir, resolveStoreDir(config, profiles));
 
     // Ensure cloned profile has isolation settings
     const settingsPath = path.join(targetDir, 'settings.json');

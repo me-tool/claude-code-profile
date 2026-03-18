@@ -45,7 +45,10 @@ export async function runPause(options: PauseOptions = {}): Promise<void> {
   log.step('Restoring ~/.claude as real directory...');
   await removeSymlink(claude);
   await copyDir(activeDir, claude);
-  await dereferencePlugins(claude);
+  const dangling = await dereferencePlugins(claude);
+  if (dangling.length > 0) {
+    log.warn(`${dangling.length} plugin(s) could not be restored (store data missing)`);
+  }
 
   await restoreStatusLine(activeDir, claude);
 

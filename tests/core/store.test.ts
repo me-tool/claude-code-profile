@@ -7,6 +7,8 @@ import {
   migrateMarketplacesToStore,
   dereferencePlugins,
   findOrphanedStoreEntries,
+  resolveStoreDir,
+  syncProfileToStore,
 } from '../../src/core/store';
 
 describe('store', () => {
@@ -22,6 +24,59 @@ describe('store', () => {
   });
 
   afterEach(async () => { await cleanupTempDir(tmpDir); });
+
+  describe('resolveStoreDir', () => {
+    it('should use config.store when present', () => {
+      expect(resolveStoreDir({ store: '/custom/store' })).toBe('/custom/store');
+    });
+
+    it('should fall back to CCP_STORE env var', () => {
+      const original = process.env.CCP_STORE;
+      process.env.CCP_STORE = '/env/store';
+      try {
+        expect(resolveStoreDir(undefined, '/profiles')).toBe('/env/store');
+      } finally {
+        if (original !== undefined) process.env.CCP_STORE = original;
+        else delete process.env.CCP_STORE;
+      }
+    });
+
+    it('should fall back to profilesDir/.store', () => {
+      const original = process.env.CCP_STORE;
+      delete process.env.CCP_STORE;
+      try {
+        expect(resolveStoreDir(undefined, '/my/profiles')).toBe('/my/profiles/.store');
+      } finally {
+        if (original !== undefined) process.env.CCP_STORE = original;
+      }
+    });
+
+    it('should prioritize config.store over env var', () => {
+      const original = process.env.CCP_STORE;
+      process.env.CCP_STORE = '/env/store';
+      try {
+        expect(resolveStoreDir({ store: '/config/store' })).toBe('/config/store');
+      } finally {
+        if (original !== undefined) process.env.CCP_STORE = original;
+        else delete process.env.CCP_STORE;
+      }
+    });
+  });
+
+  describe('syncProfileToStore', () => {
+    it('should ensure store cache dir and migrate both plugins and marketplaces', async () => {
+      const pluginDir = path.join(profileDir, 'plugins', 'cache', 'official', 'test');
+      await fs.ensureDir(path.join(pluginDir, '1.0'));
+      const mpDir = path.join(profileDir, 'plugins', 'marketplaces');
+      await fs.ensureDir(path.join(mpDir, 'official'));
+
+      await syncProfileToStore(profileDir, storeDir);
+
+      expect(await fs.pathExists(path.join(storeDir, 'cache'))).toBe(true);
+      expect((await fs.lstat(pluginDir)).isSymbolicLink()).toBe(true);
+      expect((await fs.lstat(mpDir)).isSymbolicLink()).toBe(true);
+    });
+  });
 
   describe('migratePluginsToStore', () => {
     it('should move plugin dirs to store and replace with symlinks', async () => {
@@ -150,13 +205,24 @@ describe('store', () => {
       expect(await fs.pathExists(path.join(mpDir, 'official', 'index.json'))).toBe(true);
     });
 
-    it('should remove dangling symlinks without error', async () => {
+    it('should remove dangling cache symlinks and return them', async () => {
       await fs.ensureDir(path.join(profileDir, 'plugins', 'cache', 'official'));
       await fs.symlink('/nonexistent/path', path.join(profileDir, 'plugins', 'cache', 'official', 'ghost'));
 
-      await dereferencePlugins(profileDir);
+      const dangling = await dereferencePlugins(profileDir);
 
       expect(await fs.pathExists(path.join(profileDir, 'plugins', 'cache', 'official', 'ghost'))).toBe(false);
+      expect(dangling).toHaveLength(1);
+    });
+
+    it('should remove dangling marketplaces symlink and return it', async () => {
+      await fs.ensureDir(path.join(profileDir, 'plugins'));
+      await fs.symlink('/nonexistent/mp', path.join(profileDir, 'plugins', 'marketplaces'));
+
+      const dangling = await dereferencePlugins(profileDir);
+
+      expect(await fs.pathExists(path.join(profileDir, 'plugins', 'marketplaces'))).toBe(false);
+      expect(dangling).toHaveLength(1);
     });
 
     it('should skip non-symlink entries', async () => {
@@ -186,6 +252,11 @@ describe('store', () => {
       const orphans = await findOrphanedStoreEntries(storeDir, [profileDir]);
       expect(orphans).toHaveLength(1);
       expect(orphans[0]).toBe(storeB);
+    });
+
+    it('should return empty when store cache does not exist', async () => {
+      const orphans = await findOrphanedStoreEntries(storeDir, [profileDir]);
+      expect(orphans).toHaveLength(0);
     });
 
     it('should return empty when all entries are referenced', async () => {

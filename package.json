@@ -1,6 +1,6 @@
 {
   "name": "claude-code-profile",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Chrome-like profile management for Claude Code",
   "type": "module",
   "bin": {

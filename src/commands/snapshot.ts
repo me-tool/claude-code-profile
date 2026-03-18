@@ -3,7 +3,7 @@ import { log } from '../utils/logger';
 import { autoCommit } from '../core/git';
 import { readConfig } from '../core/config';
 import { resolveProfileDir } from '../core/profile';
-import { syncProfileToStore } from '../core/store';
+import { syncProfileToStore, resolveStoreDir } from '../core/store';
 import { PROFILES_DIR } from '../core/paths';
 
 interface SnapshotOptions {
@@ -18,7 +18,7 @@ export async function runSnapshot(options: SnapshotOptions): Promise<void> {
   const dir = await resolveProfileDir(options.name, options.profilesDir);
 
   const config = await readConfig(configFile);
-  await syncProfileToStore(dir, config.store);
+  await syncProfileToStore(dir, resolveStoreDir(config, profiles));
 
   const msg = options.message ?? `manual snapshot ${new Date().toISOString()}`;
   const committed = await autoCommit(dir, msg, 'snapshot');

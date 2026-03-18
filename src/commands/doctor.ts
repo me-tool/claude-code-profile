@@ -5,8 +5,8 @@ import { log } from '../utils/logger';
 import { readConfig } from '../core/config';
 import { isSymlink, verifySymlink } from '../core/symlink';
 import { validateProfileDir } from '../core/profile';
-import { PROFILES_DIR, CLAUDE_DIR, CCP_STORE } from '../core/paths';
-import { findOrphanedStoreEntries } from '../core/store';
+import { PROFILES_DIR, CLAUDE_DIR } from '../core/paths';
+import { findOrphanedStoreEntries, resolveStoreDir } from '../core/store';
 import simpleGit from 'simple-git';
 
 interface DoctorOptions {
@@ -81,7 +81,7 @@ export async function runDoctor(options: DoctorOptions = {}): Promise<void> {
 
     // Plugin store checks
     log.plain('\nPlugin Store:');
-    const storeDir = config.store || CCP_STORE;
+    const storeDir = resolveStoreDir(config, profiles);
 
     if (await fs.pathExists(storeDir)) {
       pass(`Store directory exists: ${storeDir}`);

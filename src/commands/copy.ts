@@ -5,7 +5,7 @@ import { readConfig, addProfile } from '../core/config';
 import { copyDir } from '../utils/fs';
 import { createProfileMeta, writeProfileMeta, validateProfileName } from '../core/profile';
 import { initGit } from '../core/git';
-import { syncProfileToStore } from '../core/store';
+import { syncProfileToStore, resolveStoreDir } from '../core/store';
 import { PROFILES_DIR } from '../core/paths';
 
 interface CopyOptions {
@@ -34,7 +34,7 @@ export async function runCopy(options: CopyOptions): Promise<void> {
 
   // Re-migrate plugins to store
   const config = await readConfig(configFile);
-  await syncProfileToStore(targetDir, config.store);
+  await syncProfileToStore(targetDir, resolveStoreDir(config, profiles));
 
   const meta = createProfileMeta(options.targetName, {
     description: options.description,

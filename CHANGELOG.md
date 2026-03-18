@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-03-18
+
 ### Added
 
 - **Plugin shared store**: pnpm-style centralized storage for plugins across profiles. Plugins are stored once in `$CCP_STORE` (default `~/.claude-profiles/.store`) and shared via symlinks, eliminating redundant copies.
@@ -69,7 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Atomic symlink switching
 - Concurrent lock with stale PID detection
 
-[Unreleased]: https://github.com/me-tool/claude-code-profile/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/me-tool/claude-code-profile/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/me-tool/claude-code-profile/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/me-tool/claude-code-profile/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/me-tool/claude-code-profile/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/me-tool/claude-code-profile/releases/tag/v0.1.0
