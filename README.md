@@ -27,6 +27,8 @@
 
 ## Why?
 
+`For simple use cases, it is recommended to use the native `CLAUDE_CONFIG_DIR` parameter.`
+
 Claude Code stores all configuration in a single `~/.claude` directory. When you need different personas, skills, or rules for different workflows — a strict code reviewer, a creative brainstormer, a company-specific assistant — you're stuck with one config for everything.
 
 **ccp** gives you Chrome-like profiles. Each profile is a fully isolated `~/.claude` equivalent with its own `CLAUDE.md`, settings, plugins, skills, hooks, and memory.
